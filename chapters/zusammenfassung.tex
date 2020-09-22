@@ -1,0 +1,61 @@
+\begin{otherlanguage}{ngerman}
+
+\chapter{Zusammenfassung} \label{chap:zusammenfassung}
+
+In dieser Bachelor-Arbeit wird ein Teilproblem des Global Placements betrachtet welches beim Chip-Design-Prozess vorkommt.
+W\"ahrend ein Chip designt wird, gibt es einen Zeitpunkt zum dem bereits feststeht welche vorgefertigten Bauteile
+(bestehend aus einer kleinen Anzahl von Transistoren) f\"ur den Chip ben\"otigt werden und wie diese verbunden werden m\"ussen.
+Diese rechteckigen Bauteile werden Zellen genannt und sollen so \"uberlappungsfrei auf der rechteckigen Chipfl\"ache platziert und mit Leiterbahnen verbunden werden,
+dass die L\"ange der Leiterbahnen minimal ist, wobei einige Zellen mit vorplatzierten Verbindungsstellen verbunden werden m\"ussen.
+Die Verbindungsstellen, die entweder auf den Zellen liegen oder bereits vorplatziert sind, hei\ss{}en Pins
+und eine Menge von Pins, die auf dem finalen Chip elektronisch \"aquivalent seien sollen, hei\ss{}t Netz.
+Im ersten Schritt, dem Placement, legt man zun\"achst nur die Platzierungen der Zellen fest und minimiert dabei eine Sch\"atzung
+der Gesamtverbindungsl\"ange, die eine gewichtete Summe von den gesch\"atzten Verbindungsl\"angen der einzelnen Netze ist.
+Erst danach werden die Positionen der Leiterbahnen, die die Pins verbinden, berechnet.
+
+In einer Herangehensweise an das Placement-Problem wird im allerersten Schritt die Bedingung fallen gelassen,
+dass sich die Zellen nicht \"uberlappen d\"urfen, und es entsteht ein unbeschr\"anktes Optimierungsproblem.
+Im Kontext dieses Optimierungsproblems werden in dieser Bachelor-Arbeit zwei Sch\"atzungen der Netzl\"angen
+betrachtet, die auf den Maximumsapproximationen LogSumExp und Weighted-Average basieren.
+Diese wurden bereits in anderen Ans\"atzen im Chip-Design erfolgreich eingesetzt und
+sind differenzierbare Approximationen der Standard-Netzl\"angen-Sch\"atzung HPWL.
+Ihre Differenzierbarkeit macht es m\"oglich konvexe Optimierungsmethoden wie das Gradientenverfahren und Nesterovs Methode anzuwenden,
+um sie zu minimieren.
+
+Im ersten Teil (Kapitel \ref{chap:global_placement} bis \ref{chap:theoretical_properties})
+wird zun\"achst das Problem in den Kontext des Chip-Designs eingebettet und mathematisch formuliert.
+Danach werden die verwendeten Verbindungsl\"angen-Sch\"atzungen definiert
+und die beiden konvexen Optimierungsmethoden vorgestellt.
+Da nur bestimmte Zielfunktionen kompatibel mit diesen Methoden sind,
+werden die analytischen Eigenschaften der zwei Netzl\"angen-Sch\"atzungen (aus denen dann Zielfunktionen werden)
+zusammengefasst und etwas erweitert.
+Die auf LogSumExp basierende wird mit NLSE abgek\"urzt und die auf Weighted-Average basierende mit NWA.
+Beide approximieren HPWL abh\"angig von einem Parameter \(\gamma\) beliebig gut,
+wobei NWA bei gleichem \(\gamma\) den geringeren absoluten Fehler hat.
+NLSE ist konvex und NWA ist es nicht, obwohl dies in \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns} behauptet wird.
+NWA verletzt die Konvexit\"atsbedingungen allerdings nur leicht und ist von oben und unten durch eine konvexe Funktion beschr\"ankt.
+Zus\"atzlich besitzen beide Netzl\"angen-Sch\"atzungen einen lipschitzstetigen Gradienten.
+Diese Eigenschaften gelten ebenfalls f\"ur die Netzl\"angen-Sch\"atzungen wenn man sie als Funktionen der Zellpositionen
+anstatt der Pinpositionen betrachtet.
+
+Der zweite Teil (Kapitel \ref{chap:implementation_details} und \ref{chap:results})
+k\"ummert sich um die praktische Anwendung dieser Netzl\"angen-Sch\"atzungen im unbeschr\"ankten Optimierungsproblem,
+das oben beschrieben wurde.
+Nach ein paar Details zur Implementation werden hier NLSE und NWA
+mit Hilfe der konvexen Optimierungsmethoden auf mehreren Instanzen
+und mit mehreren Parameter-Kombinationen minimiert.
+Die Ergebnisse werden danach verglichen mit denen,
+die durch das Minimieren von HPWL bzw. quadratischer Netzl\"ange entstehen.
+Es stellt sich heraus, dass ein relativ hoher \(\gamma\)-Wert notwendig ist,
+damit die Konvergenzeigenschaften von NLSE bzw. NWA gut genug werden.
+Leider flacht mit einem hohen \(\gamma\) Wert die Zielfunktion
+rund um das Optimum extrem ab und sehr verschiedene Zellplatzierungen
+k\"onnen \"ahnlich niedrige Werte der Zielfunktion annehmen.
+Au\ss{}erdem kann es selbst mit hohen \(\gamma\)-Werten passieren,
+dass die Norm des Gradienten nicht zuverl\"assig w\"ahrend des Optimierungsprozess
+zu Null konvergiert, was das Standard-Abbruch-Kriterium unbrauchbar macht.
+Fixiert man stattdessen eine gewisse Anzahl an Iterationen, die die Laufzeit in einen akzeptablen Bereich bringen,
+so sind die Resultate sowohl in ihrer Qualit\"at als auch in der ben\"otigten Laufzeit,
+um diese zu erreichen meist schlechter als Platzierungen, die durch das Minimieren von quadratischer Netzl\"ange entstehen.
+
+\end{otherlanguage}

@@ -1,0 +1,225 @@
+\section{Netlength-LogSumExp} \label{sec:theoretical_properties_of_NLSE}
+
+Most of the results in this section are corollaries from the results in \cref{sec:theoretical_properties_of_LSE}
+intended to complete the picture and
+explicitly show the relevant properties of the objective function \(\overline{\NLSE}_{\gamma}^N(\mathbf{x})\) used later on.
+The results about approximation ratios between \(\NLSE\) and \(\HPWL\)/\(\STEINER\)
+aim to extend the results in \cite{BrennerVygen-WorstCaseRatiosOfNetworksInTheRectilinearPlane}
+and were not previously considered in the literature.
+
+
+\subsection{Definition} \label{sec:NLSE_definition}
+
+\begin{definition} \label{def:NLSE}
+ Let \(n \in \integers_{\geq 1}\). The Netlength-LogSumExp function \(\NLSE_\gamma \colon \real^n \times \real^n \to \real\) is defined as
+ \[ \NLSE_{\gamma}(\mathbf{x}, \mathbf{y}) \deq \LSE_{\gamma}(\mathbf{x}) + \LSE_{\gamma}(-\mathbf{x}) + \LSE_{\gamma}(\mathbf{y}) + \LSE_{\gamma}(-\mathbf{y}) \]
+ where \(\gamma > 0\) is a smoothing parameter as in \cref{def:LSE}.
+\end{definition}
+
+
+\begin{remark}
+ Correspondingly, \(\overline{\NLSE}_{\gamma}(\mathbf{x}) = \LSE_{\gamma}(\mathbf{x}) + \LSE_{\gamma}(-\mathbf{x})\) and
+ \[ \overline{\NLSE}_{\gamma}^N(\mathbf{x}) = \LSE_{\gamma}(A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N)). \]
+\end{remark}
+
+
+
+\subsection{Approximation Properties} \label{sec:NLSE_approximation_properties}
+
+\begin{corollary} \label{thm:NLSE_approximates_HPWL}
+ The NLSE function is an approximation of the HPWL function in the following sense:
+ \[ \HPWL (\mathbf{x}, \mathbf{y}) \leq \NLSE_{\gamma}(\mathbf{x}, \mathbf{y}) \leq \HPWL (\mathbf{x}, \mathbf{y}) + 4 \gamma \log(n) \quad \forall \mathbf{x} \in \real^n .\]
+\end{corollary}
+
+\begin{proof}
+ This follows directly from the definition of NLSE and \cref{thm:LSE_approximates_max}.
+\end{proof}
+
+
+\begin{theorem} \label{thm:NLSE_HPWL_approximation_ratios}
+ The approximation ratios between the NLSE and HPWL netlength estimations are
+ \[ 
+  \inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NLSE_\gamma(\mathbf{x}, \mathbf{y})}{\HPWL(\mathbf{x}, \mathbf{y})} = 1 
+  \quad \text{and} \quad 
+  \sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NLSE_\gamma(\mathbf{x}, \mathbf{y})}{\HPWL(\mathbf{x}, \mathbf{y})} = \infty
+ \]
+ where \(S = (\real^n \times \real^n) \setminus \Set{ t \cdot (\mathbf{1}, \mathbf{1}) | t \in \real} \)
+ is the space of all pin placements such that the netlength is not zero.
+\end{theorem}
+
+\begin{proof}
+ Let \((\mathbf{x}, \mathbf{y}) \in S \).
+ By \cref{thm:NLSE_approximates_HPWL}, \(\NLSE_\gamma (\mathbf{x}, \mathbf{y}) \geq \HPWL (\mathbf{x}, \mathbf{y})\)
+ so the infimum is at least 1.
+ To see that the infimum is exactly 1, consider
+ \[
+      \sup_{\delta \to \infty} \frac{\NLSE_\gamma (\delta \mathbf{x}, \delta \mathbf{y})}{\HPWL (\delta \mathbf{x}, \delta \mathbf{y})} 
+    = \sup_{\delta \to \infty} \frac{\delta \NLSE_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\delta \HPWL (\mathbf{x}, \mathbf{y})}
+    = \sup_{\delta \to \infty} \frac{\NLSE_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\HPWL (\mathbf{x}, \mathbf{y})}
+    = 1
+ \]
+ where \(\NLSE_{\gamma/\delta} (\mathbf{x}, \mathbf{y}) \to \HPWL (\mathbf{x}, \mathbf{y})\) for \(\delta \to \infty\) by \cref{thm:NLSE_approximates_HPWL}.
+ 
+ To see that the ratio is unbounded from above, let \(\mathbf{x}\) and \(\mathbf{y}\) converge to zero.
+ In this case, \(\NLSE_\gamma(\mathbf{x}, \mathbf{y}) \to 4 \gamma \log(n)\) and \(\HPWL(\mathbf{x}, \mathbf{y}) \to 0\) so the 
+ ratio converges to infinity.
+\end{proof}
+
+
+\begin{theorem} \label{thm:NLSE_STEINER_approximation_ratios}
+ The approximation ratios between the NLSE and STEINER netlength estimations are
+ \begin{align*}
+  \inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NLSE_\gamma(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} &= \inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} \quad \text{and}\\
+  \sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NLSE_\gamma(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} &= \infty
+ \end{align*}
+ where \(S = (\real^n \times \real^n) \setminus \Set{ t \cdot (\mathbf{1}, \mathbf{1}) | t \in \real} \)
+ is the space of all pin placements such that the netlength is not zero.
+\end{theorem}
+
+\begin{proof}
+ Let \((\mathbf{x}, \mathbf{y}) \in S \).
+ By \cref{thm:NLSE_approximates_HPWL}, \(\NLSE_\gamma(\mathbf{x}, \mathbf{y}) \geq \HPWL(\mathbf{x}, \mathbf{y})\) and similarly to the proof above
+ \[
+      \inf_{\delta \to \infty} \frac{\NLSE_\gamma (\delta \mathbf{x}, \delta \mathbf{y})}{\STEINER(\delta \mathbf{x}, \delta \mathbf{y})} 
+    = \inf_{\delta \to \infty} \frac{\NLSE_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})}
+    = \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})}
+ \]
+ for all \((\mathbf{x}, \mathbf{y}) \in S \).
+ 
+ The proof for the supremum is the same as before: 
+ Let \(\mathbf{x}\) and \(\mathbf{y}\) converge to zero.
+ In this case \(\NLSE_\gamma(\mathbf{x}, \mathbf{y}) \to 4 \gamma \log(n)\) and \(\STEINER(\mathbf{x}, \mathbf{y}) \to 0\) so the 
+ ratio converges to infinity.
+\end{proof}
+
+
+\begin{remark}
+ It was shown in \cite{BrennerVygen-WorstCaseRatiosOfNetworksInTheRectilinearPlane} that 
+ \[\inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} \geq \frac{4}{2 \lceil \sqrt{n-2} \rceil + 3} \]
+\end{remark}
+
+
+
+\subsection{Derivatives} \label{sec:NLSE_derivatives}
+
+\begin{lemma} \label{thm:derivatives_after_affine_transformation}
+ Let \(f \colon \real^m \to \real\) be a twice differentiable function with gradient \(\nabla f\) and Hessian \(\nabla^2 f\),
+ \(A \in \real^{m \times n}\) a matrix and \(\mathbf{b} \in \real^m\) a vector.
+ Then the function \(\tilde{f} \colon \real^n \to \real\) defined by
+ \( \tilde{f}(\mathbf{x}) = f(A\mathbf{x} + \mathbf{b}) \)
+ is twice differentiable and its derivatives are
+ \begin{align*}
+  \nabla \tilde{f} (\mathbf{x})   &= A^T \BktR{\nabla f(A\mathbf{x} + \mathbf{b})} \\
+  \nabla^2 \tilde{f} (\mathbf{x}) &= A^T \BktR{\nabla^2 f(A\mathbf{x} + \mathbf{b})} A
+ \end{align*}
+\end{lemma}
+
+\begin{proof}
+ This follows directly from the chain rule.
+\end{proof}
+
+
+\begin{corollary} \label{thm:NLSE_derivatives}
+ \(\overline{\NLSE}_\gamma^N\) is twice continuously differentiable and the gradient and Hessian are
+ \begin{align*}
+  \nabla \overline{\NLSE}_\gamma^N (\mathbf{x})   &= A(N)^T \BktR{\nabla \LSE_{\gamma}(\mathbf{x}^P(N)) - \nabla \LSE_{\gamma}(-\mathbf{x}^P(N))} \\
+  \nabla^2 \overline{\NLSE}_\gamma^N (\mathbf{x}) &= A(N)^T \BktR{\nabla^2 \LSE_{\gamma}(\mathbf{x}^P(N)) + \nabla^2 \LSE_{\gamma}(-\mathbf{x}^P(N))} A(N)
+ \end{align*}
+ for all \(\mathbf{x} \in \real^n\) where \( \mathbf{x}^P(N) = A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N) \).
+\end{corollary}
+
+\begin{proof}
+ By the chain rule we have that
+ \begin{align*}
+  \nabla \overline{\NLSE}_\gamma (\mathbf{x})   &= \nabla \LSE_{\gamma}(\mathbf{x}) - \nabla \LSE_{\gamma}(-\mathbf{x}) \\
+  \nabla^2 \overline{\NLSE}_\gamma (\mathbf{x}) &= \nabla^2 \LSE_{\gamma}(\mathbf{x}) + \nabla^2 \LSE_{\gamma}(-\mathbf{x}).
+ \end{align*}
+ Combining this with \cref{thm:derivatives_after_affine_transformation} gives the claim.
+\end{proof}
+
+
+
+\subsection{Convexity} \label{sec:NLSE_convexity}
+
+\begin{lemma}[{\cite[p. 79]{BoydVandenberghe-ConvexOptimization}}] \label{thm:affine_transformation_preserves_convexity}
+ Composition with an affine linear transformation preserves convexity:
+ Let \(f \colon \real^m \to \real\) be convex, \(A \in \real^{m \times n}\) a matrix and \(\mathbf{b} \in \real^m\) a vector.
+ Then the function \(\tilde{f} \colon \real^n \to \real\) defined by
+ \( \tilde{f}(\mathbf{x}) = f(A\mathbf{x} + \mathbf{b}) \)
+ is also convex.
+\end{lemma}
+
+\begin{proof}
+ Let \(\mathbf{x}_1, \mathbf{x}_2 \in \real^n\) and \(0 \leq t \leq 1\) then
+ \begin{align*}
+  \tilde{f}((1-t)\mathbf{x}_1 + t \mathbf{x}_2) &= f(A((1-t)\mathbf{x}_1 + t \mathbf{x}_2) + \mathbf{b}) \\
+                                                &= f((1-t)(A \mathbf{x}_1 + \mathbf{b}) + t(A \mathbf{x}_2 + \mathbf{b})) \\
+                                                &\leq (1-t)f(A \mathbf{x}_1 + \mathbf{b}) + t f(A \mathbf{x}_2 + \mathbf{b}) \\
+                                                &= (1-t) \tilde{f}(\mathbf{x}_1) + t \tilde{f}(\mathbf{x}_2)
+ \end{align*}
+ which shows that \(\tilde{f}\) is convex.
+\end{proof}
+
+
+\begin{corollary} \label{thm:NLSE_is_convex}
+ \(\overline{\NLSE}_\gamma^N\) is convex.
+\end{corollary}
+
+\begin{proof}
+ By the chain rule and \cref{thm:LSE_is_convex} we have that
+ \[ \nabla^2 \overline{\NLSE}_\gamma (\mathbf{x}) = \nabla^2 \LSE_{\gamma}(\mathbf{x}) + \nabla^2 \LSE_{\gamma}(-\mathbf{x}) \]
+ is positive semidefinite.
+ This shows that \(\overline{\NLSE}_\gamma\) is convex and by \cref{thm:affine_transformation_preserves_convexity} 
+ \(\overline{\NLSE}_\gamma^N\) is also convex for every net \(N\).
+\end{proof}
+
+
+
+\subsection{Lipschitz Continuous Gradient} \label{sec:NLSE_Lipschitz_continuous_gradient}
+
+\begin{lemma} \label{thm:affine_transformation_preserves_Lipschitz_continuity}
+ Let  \(f \colon \real^m \to \real\) be a twice differentiable function with gradient \(\nabla f\) and Hessian \(\nabla^2 f\)
+ such that the gradient is Lipschitz continuous.
+ Let \(A \in \real^{m \times n}\) be a matrix and \(\mathbf{b} \in \real^m\) a vector.
+ Then the function \(\tilde{f} \colon \real^n \to \real\) defined by
+ \( \tilde{f}(\mathbf{x}) = f(A\mathbf{x} + \mathbf{b}) \)
+ also has a Lipschitz continuous gradient.
+\end{lemma}
+
+\begin{proof}
+ As stated in \cref{sec:LSE_Lipschitz_continuous_gradient},
+ having a Lipschitz continuous gradient is equivalent to
+ \( \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 f(\mathbf{x})}_2 \leq L \)
+ for some \(L \in \real_{\geq 0}\).
+ With the help of \cref{thm:derivatives_after_affine_transformation}, it is easy to see that
+ \begin{align*}
+    \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \tilde{f}(\mathbf{x})}_2 
+  &= \sup_{\mathbf{x} \in \real^n} \norm{A^T \nabla^2 f(A \mathbf{x} + \mathbf{b}) A}_2 \\
+  &\leq \sup_{\mathbf{x} \in \real^n} \norm{A^T}_2 \norm{\nabla^2 f(A \mathbf{x} + \mathbf{b})}_2 \norm{A}_2 \\
+  &\leq L \norm{A}_2 \norm{A^T}_2 < \infty
+ \end{align*}
+ and this proves that \(\nabla \tilde{f}\) is Lipschitz continuous.
+\end{proof}
+
+
+
+\begin{corollary} \label{thm:NLSE_Lipschitz_constant_upper_bound}
+ \(\nabla \overline{\NLSE}_\gamma^N\) is Lipschitz continuous.
+\end{corollary}
+
+\begin{proof}
+ \(\nabla \overline{\NLSE}_\gamma\) is Lipschitz continuous by \cref{thm:LSE_Lipschitz_constant_upper_bound}:
+ \begin{align*}
+   \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \overline{\NLSE}_\gamma(\mathbf{x})}_2 
+   &= \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \LSE_\gamma(\mathbf{x}) + \nabla^2 \LSE_\gamma(-\mathbf{x})}_2 \\
+   &\leq \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \LSE_\gamma(\mathbf{x})}_2 + \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \LSE_\gamma(-\mathbf{x})}_2 \\
+   &= \frac{1}{2\gamma} + \frac{1}{2 \gamma} = \frac{1}{\gamma} 
+ \end{align*}
+ Combining this with \cref{thm:affine_transformation_preserves_Lipschitz_continuity} gives the claim.
+\end{proof}
+
+\begin{remark}
+ By definition \(A(N)\) contains exactly \(\abs{N}\) entries of value 1, so \(\norm{A(N)}_F = \sqrt{\abs{N}}\) and
+ with the previous calculations we get the following upper bound for the Lipschitz constant of \(\nabla \overline{\NLSE}_\gamma^N\):
+ \[ \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \overline{\NLSE}_\gamma^N(\mathbf{x})}_2 \leq \frac{1}{\gamma} \norm{A(N)}_2 \norm{A(N)^T}_2 \leq \frac{1}{\gamma} \norm{A(N)}_F \norm{A(N)^T}_F \leq \frac{\abs{N}}{\gamma} \]
+\end{remark}

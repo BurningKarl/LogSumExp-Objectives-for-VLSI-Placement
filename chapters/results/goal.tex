@@ -1,0 +1,31 @@
+\section{Goal} \label{sec:goal}
+
+It is important to understand the goal of investigating the use \(\NLSE\) and \(\NWA\)
+during the very first step of global placement.
+The goal of the very first step of global placement itself was already stated in \cref{sec:global_placement_and_chip_design}:
+Gain insights about the relative positions of the cells in an optimal solution of the Placement task.
+Note that all placements with low wirelength (that do not need to obey disjointness constraints)
+will have lots of overlapping cells and that the more clumped together the cells are
+the fewer clear insights about relative positions can be gained.
+Therefore, a balance has to be found between how spread out the cells are and
+how low the wirelength is.
+
+When using \(\QCLIQUE\) as the netlength estimation,
+the minimization problem can be solved extremely efficiently
+and the resulting placement spreads out the cells over large parts of the chip area.
+Unfortunately, the real wirelength of a chip depends on the rectilinear distances
+between pins and not the quadratic ones.
+This can lead to suboptimal solutions.
+
+Minimizing \(\HPWL\) does find placements with very low linear wirelength
+but the cells are mostly concentrated on very few spots of the chip area.
+If the cells belonging to one of these spots need to be assigned to different regions
+during partitioning, the assignment becomes almost arbitrary because the cells are so close to each other.
+Additionally, the running time for this approach is considerably higher than
+for minimizing \(\QCLIQUE\).
+
+The goal of using the netlength estimations \(\NLSE_\gamma\) and \(\NWA_\gamma\)
+is to find a middle ground between \(\QCLIQUE\) and \(\HPWL\) in terms of
+approximating linear wirelength while also spreading out the cells on the chip.
+At the same time, the minimization processes should of course take a reasonable amount of time.
+This goal will guide us in the following when searching for the optimal parameters.

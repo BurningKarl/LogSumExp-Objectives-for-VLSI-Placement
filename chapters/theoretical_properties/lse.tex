@@ -1,0 +1,201 @@
+\section{LogSumExp} \label{sec:theoretical_properties_of_LSE}
+
+Many of the properties of the LogSumExp function are well known and
+are covered most comprehensively in \cite{GaoPavel-PropertiesOfTheSoftmaxFunction} and \cite{BoydVandenberghe-ConvexOptimization}.
+
+
+\subsection{Definition} \label{sec:LSE_definition}
+
+\begin{definition} \label{def:LSE}
+ Let \(n \in \integers_{\geq 1}\). The LogSumExp function \(\LSE_\gamma \colon \real^n \to \real\) is defined as
+ \[ \LSE_\gamma(\mathbf{x}) = \gamma \log \BktR{\sum_{k = 1}^n \exp(x_k/\gamma)} \]
+ where \(\gamma > 0\) is referred to as the smoothing parameter.
+\end{definition}
+
+
+\begin{definition} \label{def:softmax}
+ Let \(n \in \integers_{\geq 1}\). The softmax function \(\sigma \colon \real^n \to \real^n\) is defined as
+ \[ \sigma(\mathbf{x}) \deq \BktR{ \frac{\exp(x_1)}{\sum_{k = 1}^n \exp(x_k)}, \ldots, \frac{\exp(x_n)}{\sum_{i = k}^n \exp(x_k)} }^T\]
+\end{definition}
+
+
+\begin{remark}
+ Note that \(\sigma\) maps into the set of \(n\) dimensional stochastic vectors, which is also called the \(n-1\) dimensional unit simplex:
+ \[ \Delta^{n-1} = \Set{ \mathbf{x} \in \real^n | \mathbf{1}^T \mathbf{x} = 1, \ \mathbf{x} \geq \mathbf{0}} \]
+\end{remark}
+
+
+
+\subsection{Approximation Properties} \label{sec:LSE_approximation_properties}
+
+\begin{theorem}[{\cite[p. 72]{BoydVandenberghe-ConvexOptimization}}] \label{thm:LSE_approximates_max}
+ The LSE function is an approximation of the maximum function in the following sense
+ \[ \max (\mathbf{x}) \leq \LSE_\gamma (\mathbf{x}) \leq \max (\mathbf{x}) + \gamma \log(n) \quad \forall \mathbf{x} \in \real^n \]
+\end{theorem}
+
+\begin{proof}
+ Because the exponential function is monotonically increasing, we get
+ \[ \exp \BktR{ \max \BktR{x_1/\gamma, \ldots, x_n/\gamma} } \leq \sum_{k = 1}^n \exp(x_k/\gamma) \leq n \exp \BktR{ \max \BktR{x_1/\gamma, \ldots, x_n/\gamma} }.\]
+ Applying the natural logarithm on both sides and multiplying by \(\gamma\) proves the claim.
+\end{proof}
+
+
+
+\subsection{Derivatives} \label{sec:LSE_derivatives}
+
+\begin{theorem}[\cite{GaoPavel-PropertiesOfTheSoftmaxFunction}, Proposition 1 and 2] \label{thm:LSE_derivatives}
+ The LSE function is twice continuously differentiable and the gradient and Hessian are
+ \begin{align*}
+  \nabla \LSE_\gamma (\mathbf{x})   &= \sigma(\mathbf{x}/\gamma) \\
+  \nabla^2 \LSE_\gamma (\mathbf{x}) &= \frac{1}{\gamma} \BktR{\diag(\sigma(\mathbf{x}/\gamma)) - \sigma(\mathbf{x}/\gamma) \sigma(\mathbf{x}/\gamma)^T}
+ \end{align*}
+ for all \(\mathbf{x} \in \real^n\).
+\end{theorem}
+
+\begin{proof}
+ Let us first consider the gradient \(\nabla \LSE_\gamma\). For all \(\mathbf{x} \in \real^n \) and \(1 \leq i \leq n\) we get
+ \[ \frac{\partial \LSE_\gamma}{\partial x_i} (\mathbf{x}) = \gamma \frac{1}{\sum_{k = 1}^n \exp(x_k/\gamma)} \exp(x_i/\gamma) \frac{1}{\gamma} = \frac{\exp(x_i/\gamma)}{\sum_{k = 1}^n \exp(x_k/\gamma)} = \sigma_i(\mathbf{x}/\gamma)\]
+ as the first partial derivative.
+ 
+ Now we will calculate all the second partial derivatives to get the Hessian \(\nabla^2 \LSE_\gamma\). 
+ Let \(1 \leq i, j \leq n\). The elements on the diagonal (\(i = j\)) are
+ \begin{align*}
+  \frac{\partial^2 \LSE_\gamma}{\partial x_i^2} (\mathbf{x}) &= \frac{\exp(x_i/\gamma) \frac{1}{\gamma} \BktR{ \sum_{k = 1}^n \exp(x_k/\gamma) } - \exp(x_i/\gamma) \exp(x_i/\gamma) \frac{1}{\gamma}}{ \BktR{ \sum_{k = 1}^n \exp(x_k/\gamma) }^2 } \\
+                                                      &= \frac{1}{\gamma} \sigma_i(\mathbf{x}/\gamma) - \frac{1}{\gamma} \sigma_i(\mathbf{x}/\gamma) \sigma_i(\mathbf{x}/\gamma)
+ \end{align*}
+ and the off-diagonal entries (\(i \neq j\)) are
+ \[ \frac{\partial^2 \LSE_\gamma}{\partial x_i \partial x_j} (\mathbf{x}) = \frac{0 \cdot \BktR{ \sum_{k = 1}^n \exp(x_k/\gamma) } - \exp(x_i/\gamma) \exp(x_j/\gamma) \frac{1}{\gamma}}{ \BktR{ \sum_{k = 1}^n \exp(x_k/\gamma) }^2 } = - \frac{1}{\gamma} \sigma_i(\mathbf{x}/\gamma) \sigma_j(\mathbf{x}/\gamma)\]
+ This shows that the Hessian has the structure claimed above.
+\end{proof}
+
+
+
+\subsection{Convexity} \label{sec:LSE_convexity}
+
+\begin{theorem}[\cite{GaoPavel-PropertiesOfTheSoftmaxFunction}, Lemma 4] \label{thm:LSE_is_convex}
+ The LSE function is convex but not strictly convex.
+\end{theorem}
+
+\begin{proof} 
+ We will first show convexity.
+ For a twice differentiable function \(f\) with a convex domain being convex is equivalent to the Hessian \(\nabla^2 f(\mathbf{x})\) being positive semidefinite
+ (see \cite[p. 71]{BoydVandenberghe-ConvexOptimization}).
+ Therefore, we will now show that the Hessian of the LSE function is positive semidefinite analogous to the proof in \cite[p. 74]{BoydVandenberghe-ConvexOptimization}.
+ 
+ Note that \(\nabla^2 \LSE_\gamma(\mathbf{x}) = \frac{1}{\gamma} \nabla^2 \LSE_1 (\mathbf{x}/\gamma)\).
+ Scaling the matrix by \(\frac{1}{\gamma} > 0\) does not change whether the matrix is positive semidefinite or not 
+ and scaling the arguments by \(\frac{1}{\gamma}\) does not matter because we look at all \(\mathbf{x} \in \real^n\).
+ Therefore, we may assume without loss of generality that \(\gamma = 1\). 
+ Let \(\mathbf{v} \in \real^n\), then
+ \begin{align*}
+  \mathbf{v}^T \BktR{\nabla^2 \LSE_1(\mathbf{x})} \mathbf{v} & = \mathbf{v}^T \BktR{ \diag(\sigma(\mathbf{x})) - \sigma(\mathbf{x}) \sigma(\mathbf{x})^T } \mathbf{v} \\
+                                                               & = \mathbf{v}^T \diag(\sigma(\mathbf{x})) \mathbf{v} - \mathbf{v}^T \sigma(\mathbf{x}) \sigma(\mathbf{x})^T \mathbf{v} \\
+                                                               & = \mathbf{v}^T \diag(\sigma(\mathbf{x})) \mathbf{v} - \BktR{ \sigma(\mathbf{x})^T \mathbf{v} }^2 \\
+                                                               & = \sum_{k = 1}^n v_k \sigma_k(\mathbf{x}) v_k - \BktR{ \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k }^2 \\
+                                                               & = \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 - \BktR{ \sum_{k = 1}^n \sqrt{\sigma_k(\mathbf{x})} \sqrt{\sigma_k(\mathbf{x})} v_k }^2 \\
+                                                               & \stackrel{\text{CS}}{\geq} \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 - \BktR{ \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 } \underbrace{\BktR{ \sum_{k = 1}^n \sigma_k(\mathbf{x}) }}_{=1} \\
+                                                               & = \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 - \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 \\
+                                                               & = 0
+ \end{align*}
+ for all \(\mathbf{x} \in \real^n\), so \(\nabla^2 \LSE_1\) is positive semidefinite. We used the Cauchy-Schwarz inequality to see that 
+ \[ \BktR{ \sum_{k = 1}^n \sqrt{\sigma_k(\mathbf{x})} \sqrt{\sigma_k(\mathbf{x})} v_k }^2 \leq \BktR{ \sum_{k = 1}^n \sigma_k(\mathbf{x}) v_k^2 } \BktR{ \sum_{k = 1}^n \sigma_k(\mathbf{x}) }. \] 
+ 
+ We still need to show that the function is not strictly convex. 
+ Consider the line \(\mathbf{x} = t \mathbf{1}\) for all \(t \in \real\). We get
+ \[ \LSE(\mathbf{x}) = \LSE_\gamma(t \mathbf{1}) = t + \gamma \log(n) \]
+ so LSE is a linear function on this line and not strictly convex.
+\end{proof}
+
+
+\begin{remark}
+ With a similar line of reasoning via properties of the Hessian it is also possible to show two stronger results in special cases.
+ If one fixes at least one of the variables (the variable is no longer considered an argument to the function but fixed beforehand)
+ the LSE function will be strictly convex and if one additionally restricts the domain of the function and of the fixed variables
+ to be a hypercube of the form \([a, b]^n\) then the function will be strongly convex, although with a very small convexity parameter.
+\end{remark}
+
+
+
+\subsection{Lipschitz Continuous Gradient} \label{sec:LSE_Lipschitz_continuous_gradient}
+
+Let \( \norm{\cdot}_2 \) denote the Euclidean norm for vectors and the matrix norm induced by the Euclidean norm for matrices. 
+We want to show that the gradient \(\nabla \LSE_\gamma\) is Lipschitz continuous with respect to the Euclidean norm
+\[ \norm{ \nabla \LSE_\gamma(\mathbf{x}) - \nabla \LSE_\gamma(\mathbf{y}) }_2 \leq L \norm{ \mathbf{x} - \mathbf{y} }_2 \quad \forall \mathbf{x}, \mathbf{y} \in \real^n \]
+and get tight bounds on the best (smallest) Lipschitz constant \(L^*\). We will see that
+\[ L^* \stackrel{(1)}{=} \sup_{\mathbf{x} \in \real^n} \norm{ \nabla^2 \LSE_\gamma(\mathbf{x}) }_2 \stackrel{(2)}{\leq} \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \LSE_\gamma(\mathbf{x})}_F \stackrel{(3)}{\leq} \frac{1}{2 \gamma}\]
+where \(\norm{\cdot}_F\) is the Frobenius norm which is defined as \(\norm{A}_F = \bktR{ \sum_{i=1}^n \sum_{j=1}^n \abs{ A_{ij} }^2 }^{\frac{1}{2}}\).
+Equation \((1)\) follows directly from Lemma 1.2.2 in \cite[p. 21]{Nesterov-ConvexOptimization}.
+Inequality \((2)\) comes from the fact that the matrix norm \(\Norm{\cdot}_2\) is bounded by \(\Norm{\cdot}_F\), see \cite{GolubVanLoan-MatrixComputations}, 
+while the last inequality will be shown in \cref{thm:LSE_Lipschitz_constant_upper_bound}.
+Afterwards, we will prove that this bound is indeed tight for \(n \geq 2\).
+It was already known that \(\LSE\) has a Lipschitz continuous gradient
+but it seems like the best previously known Lipschitz constant was \(\frac{1}{\gamma}\)
+(see for example Proposition 4 in \cite{GaoPavel-PropertiesOfTheSoftmaxFunction}).
+
+
+\begin{theorem} \label{thm:LSE_Lipschitz_constant_upper_bound}
+ \(\nabla \LSE_\gamma\) is Lipschitz continuous (with respect to the Euclidean norm) and its best global Lipschitz constant is at most \(\frac{1}{2\gamma}\).
+\end{theorem}
+
+\begin{proof}
+ Fix \(\mathbf{x} \in \real^n\). Let \(A = \nabla^2 \LSE_1(\mathbf{x})\), then
+ \[ \abs{A_{ij}}^2 = \begin{cases}
+                      \BktR{ \sigma_i(\mathbf{x}) - \sigma_i(\mathbf{x})^2 }^2 = \sigma_i(\mathbf{x})^2 - 2 \sigma_i(\mathbf{x})^3 + \sigma_i(\mathbf{x})^4 & \text{if } i = j \\
+                      \BktR{ - \sigma_i(\mathbf{x}) \sigma_j(\mathbf{x}) }^2 = \sigma_i(\mathbf{x})^2 \sigma_j(\mathbf{x})^2                           & \text{if } i \neq j
+                     \end{cases}
+ \]
+ Therefore, we have
+ \begin{align*}
+  \Norm{ \nabla^2 \LSE_1(\mathbf{x}) }_F^2 & = \Norm{A}_F^2 = \sum_{i=1}^n \sum_{j=1}^n \abs{A_{ij}}^2 \\
+                                             & = \sum_{i=1}^n \sigma_i(\mathbf{x})^2 - 2 \sum_{i=1}^n \sigma_i(\mathbf{x})^3 + \sum_{i=1}^n \sum_{j=1}^n \sigma_i(\mathbf{x})^2 \sigma_j(\mathbf{x})^2 \\
+                                             & = \sum_{i=1}^n \sigma_i(\mathbf{x})^2 - 2 \sum_{i=1}^n \sigma_i(\mathbf{x})^3 + \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^2 }^2 \\
+                                             & \stackrel{\text{CS}}{\leq} \sum_{i=1}^n \sigma_i(\mathbf{x})^2 - 2 \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^2 }^2 + \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^2 }^2 \\
+                                             & = \sum_{i=1}^n \sigma_i(\mathbf{x})^2 - \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^2 }^2 \leq \frac{1}{4}
+ \end{align*}
+ The first inequality follows from the Cauchy-Schwarz inequality
+ \[ \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^2 }^2 = \BktR{\sum_{i=1}^n \sigma_i(\mathbf{x})^{\frac{3}{2}} \sigma_i(\mathbf{x})^{\frac{1}{2}}}^2 \leq \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^3 } \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x})^1 } = \sum_{i=1}^n \sigma_i(\mathbf{x})^3 \]
+ and the second one from the fact that \(a - a^2 \leq \frac{1}{4}\) for all \(a \in \real\).
+ We have shown that
+ \[ \sup_{\mathbf{x} \in \real^n} \Norm{ \nabla^2 \LSE_1(\mathbf{x}) }_2 \leq \sup_{\mathbf{x} \in \real^n} \Norm{ \nabla^2 \LSE_1(\mathbf{x}) }_F \leq \sqrt{\frac{1}{4}} = \frac{1}{2}\] 
+ which implies that
+ \[ \sup_{\mathbf{x} \in \real^n} \Norm{ \nabla^2 \LSE_\gamma(\mathbf{x}) }_2 = \sup_{\mathbf{x} \in \real^n} \Norm{ \frac{1}{\gamma} \nabla^2 \LSE_1(\mathbf{x}/\gamma) }_2 = \frac{1}{\gamma}  \sup_{\mathbf{x} \in \real^n} \Norm{ \nabla^2 \LSE_1(\mathbf{x}) }_2 \leq \frac{1}{2 \gamma} \]
+ thus proving the statement.
+\end{proof}
+
+
+\begin{theorem} \label{thm:LSE_Lipschitz_constant_lower_bound}
+ Let \(n \geq 2\). Any global Lipschitz constant of \(\nabla \LSE_\gamma\) is at least \(\frac{1}{2\gamma}\).
+\end{theorem}
+
+\begin{proof}
+ Fix arbitrary real numbers \((x_i)_{3 \leq i \leq n}\).
+ We will show that there is a sequence of \(\mathbf{x} \in \real^n\) 
+ such that \(\Norm{ \nabla^2 \LSE_\gamma(\mathbf{x}) }_2\) converges to a value that is at least \(\frac{1}{2 \gamma}\)
+ by setting the first two entries of \(\mathbf{x}\) to \(a\) and letting \(a\) tend to infinity.
+ With the help of \cref{thm:LSE_derivatives} we can easily calculate the limit of the gradient
+ \[ \mathbf{x}_a \deq \begin{pmatrix} a \\ a \\ x_3 \\ \vdots \\ x_n \end{pmatrix} \;
+    \implies \; \lim_{a \to \infty} \sigma(\mathbf{x}_a / \gamma) = \frac{1}{2} \cdot \begin{pmatrix} 1 \\ 1 \\ 0 \\ \vdots \\ 0 \end{pmatrix} \]
+ and subsequently the limit of the Hessian:
+ \[ \lim_{a \to \infty} \nabla^2 \LSE_\gamma(\mathbf{x}_a) 
+    = \frac{1}{4 \gamma} \BktR{ \begin{array}{@{}ccc@{}}  1 & -1 & \multicolumn{1}{|c}{0} \\
+                                                         -1 &  1 & \multicolumn{1}{|c}{\vdots} \\ \cline{1-2} 
+                                                          0 & \ldots & \multicolumn{1}{c}{0}                    \end{array} }\]
+ With \(\mathbf{v} \deq \mathbf{e}_1 - \mathbf{e}_2 \in \real^n\) we have
+ \begin{align*}
+  \sup_{\mathbf{x} \in \real^n} \Norm{\nabla^2 \LSE_\gamma(\mathbf{x})}_2 & \geq \lim_{a \to \infty} \Norm{\nabla^2 \LSE_\gamma(\mathbf{x}_a)}_2 \\
+                                                                          & \geq \lim_{a \to \infty} \frac{\Norm{\nabla^2 \LSE_\gamma(\mathbf{x}_a) \mathbf{v}}_2}{\Norm{\mathbf{v}}_2} \\
+                                                                          & = \frac{\sqrt{\BktR{\frac{1}{2 \gamma}}^2 + \BktR{-\frac{1}{2 \gamma}}^2}}{\sqrt{1^2 + (-1)^2}} = \frac{\sqrt{\frac{1}{2} \frac{1}{\gamma^2}}}{\sqrt{2}} = \frac{1}{2 \gamma}
+ \end{align*}
+ and this proves the statement.
+\end{proof}
+
+
+\begin{corollary} \label{thm:LSE_Lipschitz_constant}
+ Let \(n \geq 2\). Then \(\nabla \LSE_\gamma\) is Lipschitz continuous and its best global Lipschitz constant is \(\frac{1}{2 \gamma}\).
+\end{corollary}
+
+
+\begin{remark}
+ For the case \(n = 1\) we have that \(\nabla \LSE_\gamma(x) = \frac{\exp(x/\gamma)}{\exp(x/\gamma)} = 1\) (the gradient is constant) 
+ and therefore the Lipschitz constant of the gradient is zero.
+\end{remark}

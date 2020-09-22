@@ -1,0 +1,33 @@
+\chapter{Summary} \label{chap:summary}
+
+In this bachelor thesis the use of the \(\NLSE\) and \(\NWA\) netlength estimations
+in a specific subproblem of the global placement task was investigated.
+The theoretical properties of these two netlength estimations were summarized
+and expanded to show that the corresponding weighted total wirelength functions
+can be used as objective functions for the convex optimization techniques
+gradient descent and Nesterov's accelerated gradient method.
+Afterwards these convex optimization methods were used in practice on some chip instances
+to solve the problem and the results were compared
+with approaches that use the classic netlength estimations \(\QCLIQUE\) and \(\HPWL\).
+
+The main takeaways from the theoretical section are the following:
+Both \(\NLSE_\gamma\) and \(\NWA_\gamma\) approximate \(\HPWL\)
+closer and closer as \(\gamma\) tends to zero
+but \(\NWA\) is always closer to \(\HPWL\) for the same \(\gamma\).
+\(\NLSE\) is convex and contrary to what was claimed in \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns} \(\NWA\) is not convex
+but \(\NWA\) only slightly violates the convexity conditions and can be bounded from above and below by a convex function.
+Additionally, both netlength estimations have a Lipschitz continuous gradient.
+All of these properties also extend to the netlength estimations when viewed as functions
+of cell positions rather than pin positions.
+
+In spite of these positive theoretical results, the pratical results are rather disappointing.
+The value of \(\gamma\) has to be fairly high in order for the convergence properties
+of these netlength estimations to become good enough and then the objective functions
+flatten out so much towards their minima that very different placements can achieve close to optimal values.
+Even when high \(\gamma\)-values are chosen the convex optimization methods
+are not able to reliably decrease the gradient norm towards zero
+so that a low gradient norm fails as a good stopping criterion.
+If the optimization processes are instead stopped after a fixed number of iterations
+that keep the runtime in a reasonable range the resulting placements
+are not able to compete with the results of minimizing \(\QCLIQUE\)
+in terms of solution quality or runtime.

@@ -1,0 +1,36 @@
+%% This document serves as single source for all customizations
+%% and settings for the (TM) main file.
+
+% import base commands for file importing
+\subimport{./}{include_standalone.tex}
+
+% Central packages (that only need minimal configuration)
+\subimport{./}{packages.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Colors
+
+% Color definitions
+\subimport{./}{colors.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Custom Commands
+
+% Custom bracket commands
+\subimport{./}{brackets.tex}
+
+% Custom, special environments (eg. for problems and algorithms)
+\subimport{./}{environments.tex}
+
+\subimport{./}{shorthands.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Document Settings (lengths etc.)
+
+% General layout settings (margins, tex layout config)
+\subimport{./}{layout.tex}
+
+% Special biblatex config (eg. for article numbers)
+% It's unclear why input works here, despite subimport not working.
+\input{citations/setup.tex}
+

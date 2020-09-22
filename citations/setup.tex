@@ -1,0 +1,26 @@
+% In essence taken from this SO post:
+% https://tex.stackexchange.com/questions/194355/articleno-in-biblatex
+
+\NewBibliographyString{artno}
+\DefineBibliographyStrings{english}{artno = {Art\adddotspace No\adddot}}
+\DefineBibliographyStrings{german}{artno = {Art\adddotspace Nr\adddot}}
+
+\DeclareFieldFormat{articleno}{\bibstring{artno}\addabbrvspace #1}
+
+\renewbibmacro*{note+pages}{%
+ \printfield{note}%
+ \setunit{\bibpagespunct}%
+ \printfield{articleno}
+ \setunit{\bibpagespunct}%
+ \printfield{pages}%
+ \newunit%
+}
+
+\renewbibmacro*{chapter+pages}{%
+ \printfield{chapter}%
+ \setunit{\bibpagespunct}%
+ \printfield{articleno}
+ \setunit{\bibpagespunct}%
+ \printfield{pages}%
+ \newunit
+}

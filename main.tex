@@ -1,0 +1,75 @@
+%\documentclass[a4paper,10pt]{book}
+\documentclass[a4paper, 12pt, twoside, BCOR=11mm, egregdoesnotlikesansseriftitles]{scrbook}
+
+ % We need this package to properly import our dependencies below.
+ \usepackage{import}  % subimport
+
+ % All settings: packages, customizations, commands.
+ \subimport{settings/}{all.tex}
+
+ % Bibliography resources
+ \subimport{citations/}{all.tex}
+
+ % Bachelor thesis front page
+ \usepackage{BA_Titelseite}
+
+ 
+%Namen des Verfassers der Arbeit
+\author{Karl Stefan Welzel}
+%Geburtsdatum des Verfassers
+\geburtsdatum{18. Dezember 1998}
+%Gebortsort des Verfassers
+\geburtsort{Bonn}
+%Datum der Abgabe der Arbeit
+\date{23. Juli 2020}
+
+%Name des Betreuers
+% z.B.: Prof. Dr. Peter Koepke
+\betreuer{Betreuer: Prof. Dr. Stephan Held}
+%Name des Zweitgutachters
+\zweitgutachter{Zweitgutachter: Dr. Ulrich Brenner}
+%Name des Instituts an dem der Betreuer der Arbeit tätig ist.
+%z.B.: Mathematisches Institut
+%\institut{Mathematisches Institut}
+%\institut{Institut f\"ur Angewandte Mathematik}
+%\institut{Institut f\"ur Numerische Simulation}
+\institut{Forschungsinstitut f\"ur Diskrete Mathematik}
+%Titel der Bachelorarbeit
+\title{LogSumExp Objectives for VLSI Placement}
+%Do not change!
+\ausarbeitungstyp{Bachelorarbeit Mathematik}
+
+\begin{document}
+
+ \hypersetup{pageanchor=false}
+ \maketitle
+ \hypersetup{pageanchor=true}
+ 
+ \frontmatter
+ \tableofcontents{}
+
+ % chapters can have their own directories, but don't have to
+ %\subimport{chapters/examples/}{example-code.tex}
+ %\subimport{chapters/examples/}{editor-integration.tex}
+ 
+ \mainmatter
+ \subimport{chapters/}{introduction.tex}
+ \subimport{chapters/}{global_placement.tex}
+ \subimport{chapters/}{convex_optimization.tex}
+ \subimport{chapters/}{theoretical_properties.tex}
+ \subimport{chapters/}{implementation_details.tex}
+ \subimport{chapters/}{results.tex}
+ \subimport{chapters/}{summary.tex}
+ \subimport{chapters/}{zusammenfassung.tex}
+
+ \backmatter
+ \printbibliography[heading=bibintoc]
+%  \cleardoublepage{}
+ % for some reason, hyperref is confused by index / bibliography.
+ % the cmd below fixes that.
+ \phantomsection
+%  \cleardoublepage{}
+% \listoffigures
+% \todototoc\listoftodos
+\end{document}
+

@@ -1,0 +1,32 @@
+\chapter{Introduction} \label{chap:Introduction}
+
+This bachelor thesis is concerned with a subproblem of the global placement problem originating in computer chip design.
+Chip design is a field of research that tries to develop methods to automate the design of very-large scale integrated (VLSI) chipsets
+because purely manual design would not be able to handle the ever increasing complexity of modern day computer chips.
+Many of the challenging problems that arise in this field are only solvable efficiently enough with heuristic algorithms.
+Chip design remains an active research area as new heuristics are explored
+and some problems change with further progress in chip manufacturing technologies.
+
+At some point during the chip design process it is fixed which prebuilt components will make up the chip and how they are connected.
+At this stage the rectangular components called cells need to be placed on the rectangular chip area without overlaps
+such that the estimated length of the wires needed to connect the cells is minimal
+given that some of the cells need to be connected to previously placed contact points on the chip.
+% Mention NP-completeness?
+As part of a classical heuristic approach to this problem one relaxes the constraint that the cells may not overlap in the very first step.
+This leads to an unconstrained minimization problem that mainly depends on how the wirelength is estimated.
+Some wirelength estimations may be minimized very efficiently while others come closer to estimating the real wirelength.
+In this bachelor thesis we investigate the use of two wirelength estimations
+based on the maximum approximations LogSumExp and Weighted-Average,
+which proved to be successful in other contexts, during this unconstrained minimization.
+These two wirelength estimations are differentiable approximations of the canonical (and not differentiable) wirelength estimation HPWL
+and allow for the use of convex optimization methods such as gradient descent and Nesterov's accelerated gradient method.
+
+This thesis consists of two main parts:
+In the first part the problem and the optimization methods are described in detail
+and the theoretical properties of the two wirelength estimations are summarized.
+Here, the properties that are relevant either to their use as wirelength estimations
+or to their use as objective functions that are minimized with convex optimization methods
+are presented.
+The second part is concerned with some pratical considerations
+and the evaluation of the performance of these wirelength estimations
+in the unconstrained minmization problem outlined above.

@@ -1,0 +1,305 @@
+\section{Changing the Step Size Strategies} \label{sec:changing_step_size_strategies}
+
+It is useful to consider other step size strategies than \texttt{backtracking-line-search}
+because it requires at least one evaluation of the objective function for each iteration which makes it very expensive.
+At the same time, changing the step size strategy will also influence how fast the gradient norm is reduced
+so one must consider both runtime and convergence speed.
+To simplify the graphs, we chose to only test with the \(\NWA\) netlength estimation,
+the results are similar for \(\NLSE\).
+The parameters for this section are therefore
+\begin{itemize}
+ \item Objective function: \(T_{\NWA_\gamma}\) with \(\gamma = 10^5\)
+ \item Start vector: CENTER
+ \item Optimization method: Nesterov's accelerated gradient method
+ \item The step size strategies: \texttt{constant}, \texttt{scaled-by-sqrt}, \texttt{backtracking-\allowbreak{}line-\allowbreak{}search}, \texttt{observed-\allowbreak{}lipschitz}, \texttt{min-\allowbreak{}observed-\allowbreak{}lipschitz}, \texttt{barzilai-\allowbreak{}borwein}
+ \item The stopping criterion: After exactly 500 iterations
+\end{itemize}
+
+\begin{figure}[ht]
+ \centering
+ \begin{tikzpicture}
+  \begin{groupplot} [
+      width=(\textwidth-1cm),
+      height=(\textwidth-1cm)/2,
+      group style={group size=1 by 2},
+      group/xlabels at=edge bottom,
+      xlabel=Time,
+      x unit=\si{\hour},
+      ylabel=\(T_{\NWA_\gamma}\),
+      y unit=\si{\meter},
+      yticklabel style={/pgf/number format/fixed},
+      enlarge x limits={value=0.05, upper},
+      xmin=0,
+  ]
+   \nextgroupplot
+%    \addlegendentry{\texttt{constant}}
+   \addplot [blue, thick] table [
+    x expr=\thisrow{NAG_constant_time}/3600,
+    y=NAG_constant_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{scaled-by-sqrt}}
+   \addplot [dark_green, thick] table [
+    x expr=\thisrow{NAG_scaled-by-sqrt_time}/3600,
+    y=NAG_scaled-by-sqrt_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{observed-lipschitz}}
+   \addplot [orange, thick] table [
+    x expr=\thisrow{NAG_observed-lipschitz_time}/3600,
+    y=NAG_observed-lipschitz_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{min-observed-lipschitz}}
+   \addplot [Goldenrod, thick] table [
+    x expr=\thisrow{NAG_min-observed-lipschitz_time}/3600,
+    y=NAG_min-observed-lipschitz_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{barzilai-borwein}}
+   \addplot [Violet, thick] table [
+    x expr=\thisrow{NAG_barzilai-borwein_time}/3600,
+    y=NAG_barzilai-borwein_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{barzilai-borwein} + GD}
+   \addplot [Thistle, thick] table [
+    x expr=\thisrow{GD_barzilai-borwein_time}/3600,
+    y=GD_barzilai-borwein_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{backtracking-line-search}}
+   \addplot [red, thick] table [
+    x expr=\thisrow{NAG_backtracking-line-search_time}/3600,
+    y=NAG_backtracking-line-search_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \nextgroupplot[ymax=4.75]
+   \addlegendentry{\texttt{constant}}
+   \addplot [blue, thick] table [
+    x expr=\thisrow{NAG_constant_time}/3600,
+    y=NAG_constant_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{scaled-by-sqrt}}
+   \addplot [dark_green, thick] table [
+    x expr=\thisrow{NAG_scaled-by-sqrt_time}/3600,
+    y=NAG_scaled-by-sqrt_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{observed-lipschitz}}
+   \addplot [orange, thick] table [
+    x expr=\thisrow{NAG_observed-lipschitz_time}/3600,
+    y=NAG_observed-lipschitz_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{min-observed-lipschitz}}
+   \addplot [Goldenrod, thick] table [
+    x expr=\thisrow{NAG_min-observed-lipschitz_time}/3600,
+    y=NAG_min-observed-lipschitz_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{barzilai-borwein}}
+   \addplot [Violet, thick] table [
+    x expr=\thisrow{NAG_barzilai-borwein_time}/3600,
+    y=NAG_barzilai-borwein_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{barzilai-borwein} + GD}
+   \addplot [Thistle, thick] table [
+    x expr=\thisrow{GD_barzilai-borwein_time}/3600,
+    y=GD_barzilai-borwein_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{backtracking-line-search}}
+   \addplot [red, thick] table [
+    x expr=\thisrow{NAG_backtracking-line-search_time}/3600,
+    y=NAG_backtracking-line-search_objective,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+   \end{groupplot}
+  \end{tikzpicture}
+ \caption{Objective function by time depending on the step size strategy} 
+ \label{fig:step_size_strategies_objective_convergence_by_time}
+\end{figure}
+
+\begin{figure}[ht]
+ \centering
+ \begin{tikzpicture}
+  \begin{groupplot} [
+      width=(\textwidth-1cm),
+      height=(\textwidth-1cm)/2,
+      group style={group size=1 by 2},
+      group/xlabels at=edge bottom,
+      xlabel=Time,
+      x unit=\si{\hour},
+      ylabel=Gradient norm,
+      y unit=\si{\micro\meter},
+      yticklabel style={/pgf/number format/fixed},
+      enlarge x limits={value=0.05, upper},
+      xmin=0,
+%       ymax=0.148019197,
+  ]
+   \nextgroupplot
+%    \addlegendentry{\texttt{constant}}
+   \addplot [blue, thick] table [
+    x expr=\thisrow{NAG_constant_time}/3600,
+    y=NAG_constant_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{scaled-by-sqrt}}
+   \addplot [dark_green, thick] table [
+    x expr=\thisrow{NAG_scaled-by-sqrt_time}/3600,
+    y=NAG_scaled-by-sqrt_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{observed-lipschitz}}
+   \addplot [orange, thick] table [
+    x expr=\thisrow{NAG_observed-lipschitz_time}/3600,
+    y=NAG_observed-lipschitz_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{min-observed-lipschitz}}
+   \addplot [Goldenrod, thick] table [
+    x expr=\thisrow{NAG_min-observed-lipschitz_time}/3600,
+    y=NAG_min-observed-lipschitz_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{barzilai-borwein}}
+   \addplot [Violet, thick] table [
+    x expr=\thisrow{NAG_barzilai-borwein_time}/3600,
+    y=NAG_barzilai-borwein_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{barzilai-borwein} + GD}
+%    \addplot [Thistle, thick] table [
+%     x expr=\thisrow{GD_barzilai-borwein_time}/3600,
+%     y=GD_barzilai-borwein_euclidean_norm,
+%    ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{backtracking-line-search}}
+   \addplot [red, thick] table [
+    x expr=\thisrow{NAG_backtracking-line-search_time}/3600,
+    y=NAG_backtracking-line-search_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \nextgroupplot[ymax=0.16]
+   \addlegendentry{\texttt{constant}}
+   \addplot [blue, thick] table [
+    x expr=\thisrow{NAG_constant_time}/3600,
+    y=NAG_constant_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{scaled-by-sqrt}}
+   \addplot [dark_green, thick] table [
+    x expr=\thisrow{NAG_scaled-by-sqrt_time}/3600,
+    y=NAG_scaled-by-sqrt_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{observed-lipschitz}}
+   \addplot [orange, thick] table [
+    x expr=\thisrow{NAG_observed-lipschitz_time}/3600,
+    y=NAG_observed-lipschitz_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{min-observed-lipschitz}}
+   \addplot [Goldenrod, thick] table [
+    x expr=\thisrow{NAG_min-observed-lipschitz_time}/3600,
+    y=NAG_min-observed-lipschitz_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{barzilai-borwein}}
+   \addplot [Violet, thick] table [
+    x expr=\thisrow{NAG_barzilai-borwein_time}/3600,
+    y=NAG_barzilai-borwein_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+%    \addlegendentry{\texttt{barzilai-borwein} + GD}
+%    \addplot [Thistle, thick] table [
+%     x expr=\thisrow{GD_barzilai-borwein_time}/3600,
+%     y=GD_barzilai-borwein_euclidean_norm,
+%    ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+
+   \addlegendentry{\texttt{backtracking-line-search}}
+   \addplot [red, thick] table [
+    x expr=\thisrow{NAG_backtracking-line-search_time}/3600,
+    y=NAG_backtracking-line-search_euclidean_norm,
+   ] {chapters/results/step_size_strategies/convergence_Chip1_by_step_size_strategy.data};
+   \end{groupplot}
+  \end{tikzpicture}
+ \caption{Gradient norm by time depending on the step size strategy} 
+ \label{fig:step_size_strategies_gradient_convergence_by_time}
+\end{figure}
+
+In \cref{fig:step_size_strategies_objective_convergence_by_time} and \cref{fig:step_size_strategies_gradient_convergence_by_time}
+the objective function and gradient norm is graphed during the optimization process with different step size strategies.
+This time, the x-axis does not represent the number of iterations but the runtime
+which enables us to see the convergence properties and runtime at the same time.
+For both the gradient norm and the objective function the values for x- and y-direction were added up.
+Similarly the time values were summed up such that the data point at iteration \(i\) is plotted
+at the time that would be needed to first calculate \(i\) iterations for the x-coordinates and then \(i\) iterations for the y-coordinates.
+Due to this, the real time needed for 500 iterations is roughly half of the rightmost point of each graph.
+Additionally, the second graph of each figure is just a zoomed in version of the graph above to get a more detailed comparison
+between those step size strategies that perform the best.
+
+One of the first observations is that the runtime indeed decreases significantly
+when opting for a different step size strategy than \texttt{backtracking-line-search}.
+The runtime for 500 iterations decreases by roughly 30\% regardless of which other option was chosen.
+The cause of the different runtimes between the faster step size strategies remains unclear:
+An additional square root computation for every iteration does not explain the visible increase in runtime
+of \texttt{scaled-by-sqrt} over \texttt{constant}.
+Similarly, the shorter runtime of \texttt{observed-lipschitz} when compared to \texttt{min-observed-lipschitz}
+can not be explained by one missing minimum computation between
+\(h_{k-1}\) and \(\frac{\norm{ \mathbf{x}^{(k)} - \mathbf{x}^{(k-1)} }_2}{\norm{ \nabla f(\mathbf{x}^{(k)}) - \nabla f(\mathbf{x}^{(k-1)}) }_2}\)
+per iteration.
+The differences might be caused by small changes in the runtime of the \(\exp\) function depending on the input value,
+which become significant because the function is called millions of times per iteration.
+If this is correct, the runtime would vary (inside a certain range) with the minimization path taken
+and the impact would be unforseeable.
+This is why no further runtime differences are analyzed.
+Any step size strategy except for \texttt{backtracking-line-search} is considered as having roughly the same runtime.
+
+Let us now analyze the details of graphs:
+The step size strategy \texttt{constant} stands out because the objective function heavily fluctuates
+during the minimization process and the gradient norm does not converge to zero.
+This is because the initial step size is determined using \texttt{backtracking-line-search} (see \cref{subsec:implementation_first_step_size})
+and might be alright for the first iteration but is certainly too large for the following iterations.
+Big fluctuation without relevant decrease of the objective function is a standard problem
+when the step size is chosen too large.
+This strong dependence on a heuristic determining the first step size makes this step size strategy unreliable for our purposes.
+
+\texttt{scaled-by-sqrt} avoids most of the issues of \texttt{constant} but also does perform worse than
+the other options in terms of gradient norm and objective function.
+The main contenders for the best step size strategy are \texttt{observed-lipschitz}, \texttt{min-observed-lipschitz}
+and \texttt{barzilai-borwein}.
+The graphs of the objective functions during the optimization process are very similar for all of them,
+but the graph of the gradient norm is best for \texttt{barzilai-borwein}.
+It is the only step size strategy apart from \texttt{backtracking-line-search} that can consistently
+decrease the gradient norm.
+As previously said, this enables the stopping criterion to work correctly
+in the sense that a continuous decrease of \(\varepsilon\) leads to continuous increase in runtime.
+
+The question might be raised whether using gradient descent as the method of convex optimization
+leads to further runtime improvements with comparable success in minimizing the objective function
+and decreasing the gradient norm.
+The best step size strategy in conjuction with gradient descent is \texttt{barzilai-borwein}
+and the combination is included in \cref{fig:step_size_strategies_objective_convergence_by_time}
+as \enquote{\texttt{barzilai-borwein} + GD}.
+As can be seen, the runtime is indeed reduced further by about 30\% but the objective function does not
+decrease smoothly.
+The objective function and the gradient norm both spike at some points during the optimization process
+which indicates that this method is not stable.
+(The graph of the gradient norm spikes so much that including it in
+\cref{fig:step_size_strategies_gradient_convergence_by_time} would make the diagram illegible.)
+The only step size strategy that produces a smooth objective function graph when used
+with gradient descent is \texttt{backtracking-line-search} but the shorter runtime per iteration
+is outweighed by the slower convergence of the objective function
+when compared to its optimization with Nesterov's accelerated gradient method.
+This means that although the gradient descent method is faster, it either makes the
+objective function converge slower or produces unstable results.
+For this reason, we will only consider Nesterov's method in the following (as already done in the previous chapters).
+
+In summary, the \texttt{barzilai-borwein} step size strategy combined with Nesterov's accelerated gradient
+is chosen as the best combination of these parameters.
+It is able to decrease the runtime of the average iteration by about 30\%
+and is subsequently able to reduce the objective function significantly faster
+than \texttt{backtracking-line-search}.

@@ -1,0 +1,216 @@
+\section{Netlength-Weighted-Average} \label{sec:theoretical_properties_of_NWA}
+
+Most of the results in this section are corollaries from the results in \cref{sec:theoretical_properties_of_WA}
+intended to complete the picture and
+explicitly show the relevant properties for the objective function \(\overline{\NWA}_{\gamma}^N(\mathbf{x})\) used later on.
+The results about approximation ratios between \(\NWA\) and \(\HPWL\)/\(\STEINER\)
+aim to extend the results in \cite{BrennerVygen-WorstCaseRatiosOfNetworksInTheRectilinearPlane}
+and were not previously considered in the literature.
+
+\subsection{Definition} \label{sec:NWA_definition}
+
+\begin{definition} \label{def:NWA}
+ Let \(n \in \integers_{\geq 1}\). The Netlength-Weighted-Average function \(\NWA_\gamma \colon \real^n \times \real^n \to \real\) is defined as
+ \[ \NWA_{\gamma}(\mathbf{x}, \mathbf{y}) \deq \WA_{\gamma}(\mathbf{x}) + \WA_{\gamma}(-\mathbf{x}) + \WA_{\gamma}(\mathbf{y}) + \WA_{\gamma}(-\mathbf{y}) \]
+ where \(\gamma > 0\) is a smoothing parameter as in \cref{def:WA}.
+\end{definition}
+
+
+\begin{remark}
+ Correspondingly, \(\overline{\NWA}_{\gamma}(\mathbf{x}) = \WA_{\gamma}(\mathbf{x}) + \WA_{\gamma}(-\mathbf{x})\) and
+ \[ \overline{\NWA}_{\gamma}^N(\mathbf{x}) = \WA_{\gamma}(A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N)) \]
+\end{remark}
+
+
+
+\subsection{Approximation Properties} \label{sec:NWA_approximation_properties}
+
+\begin{corollary} \label{thm:NWA_approximates_HPWL}
+ The NWA function is an approximation of the HPWL function in the following sense
+ \[ \HPWL (\mathbf{x}, \mathbf{y}) - 4 \gamma W (\tfrac{n-1}{e}) \leq \NWA_{\gamma}(\mathbf{x}, \mathbf{y}) \leq \HPWL (\mathbf{x}, \mathbf{y}) \quad \forall \mathbf{x} \in \real^n \]
+ where \(W\) is the Lambert W function.
+\end{corollary}
+
+\begin{proof}
+ This follows directly from the definition of NWA and \cref{thm:WA_approximates_max}.
+\end{proof}
+
+
+\begin{corollary} \label{thm:NWA_approximates_HPWL_better_than_NLSE}
+ The NWA function approximates HPWL better than the NLSE function in the sense that the maximum absolute error is lower, i.e.
+ \[ \sup_{\mathbf{x}, \mathbf{y} \in \real^n} \Abs{ \NWA_\gamma(\mathbf{x}, \mathbf{y}) - \HPWL(\mathbf{x}, \mathbf{y}) } < \sup_{\mathbf{x}, \mathbf{y} \in \real^n} \Abs{ \NLSE_\gamma(\mathbf{x}, \mathbf{y}) - \HPWL(\mathbf{x}, \mathbf{y}) } \]
+ for all \(\gamma > 0\) and \(n \in \integers_{\geq 2}\).
+\end{corollary}
+
+\begin{proof}
+ By \cref{thm:NLSE_approximates_HPWL} and the fact that \(\NLSE_\gamma(\mathbf{0}, \mathbf{0}) = 4 \gamma \log(n)\), we get that
+ \[ \sup_{\mathbf{x}, \mathbf{y} \in \real^n} \Abs{ \NLSE_\gamma(\mathbf{x}, \mathbf{y}) - \HPWL(\mathbf{x}, \mathbf{y}) } = 4 \gamma \log(n) \]
+ and since \(W(\tfrac{n-1}{e}) < \log(n)\) for \(n \geq 2\) by \cref{thm:WA_approximates_max_better_than_LSE} we have that
+ \[ \sup_{\mathbf{x}, \mathbf{y} \in \real^n} \Abs{ \NWA_\gamma(\mathbf{x}, \mathbf{y}) - \HPWL(\mathbf{x}, \mathbf{y}) } \leq 4 \gamma W (\tfrac{n-1}{e}) < 4 \gamma \log(n) \]
+ which proves the claim.
+\end{proof}
+
+
+\begin{theorem} \label{thm:NWA_HPWL_approximation_ratios}
+ The approximation ratios between the NWA and HPWL netlength estimations are
+ \[ 
+  \inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\HPWL(\mathbf{x}, \mathbf{y})} = 0
+  \quad \text{and} \quad 
+  \sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\HPWL(\mathbf{x}, \mathbf{y})} = 1
+ \]
+ where \(S = (\real^n \times \real^n) \setminus \Set{ t \cdot (\mathbf{1}, \mathbf{1}) | t \in \real} \)
+ is the space of all pin placements such that the netlength is not zero.
+\end{theorem}
+
+\begin{proof}
+ Let \((\mathbf{x}, \mathbf{y}) \in S \).
+ By \cref{thm:NWA_approximates_HPWL}, \(\NWA_\gamma (\mathbf{x}, \mathbf{y}) \leq \HPWL (\mathbf{x}, \mathbf{y}) \)
+ so that the supremum is at most 1.
+ To see that the supremum is exactly 1, consider
+ \[
+      \sup_{\delta \to \infty} \frac{\NWA_\gamma (\delta \mathbf{x}, \delta \mathbf{y})}{\HPWL (\delta \mathbf{x}, \delta \mathbf{y})} 
+    = \sup_{\delta \to \infty} \frac{\delta \NWA_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\delta \HPWL (\mathbf{x}, \mathbf{y})}
+    = \sup_{\delta \to \infty} \frac{\NWA_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\HPWL (\mathbf{x}, \mathbf{y})}
+    = 1
+ \]
+ where \(\NWA_{\gamma/\delta} (\mathbf{x}, \mathbf{y}) \to \HPWL (\mathbf{x}, \mathbf{y})\) for \(\delta \to \infty\) by \cref{thm:NWA_approximates_HPWL}.
+ 
+ To see that the ratio can get arbitrarily small, let \(\mathbf{x} = (a, 0, \ldots, 0)^T \) and \(\mathbf{y} = \mathbf{0}\) for some \(a > 0\).
+ In this case, 
+ \begin{align*}
+      \lim_{a \to 0} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\HPWL(\mathbf{x}, \mathbf{y})} 
+    &= \lim_{a \to 0} \frac{\frac{a \exp(a)}{\exp(a) + (n-1)} + \frac{-a \exp(-a)}{\exp(-a) + (n-1)}}{a} \\
+    &= \lim_{a \to 0} \frac{\exp(a)}{\exp(a) + (n-1)} - \frac{\exp(-a)}{\exp(-a) + (n-1)}
+    = 0
+ \end{align*}
+ which shows that the infimum is zero.
+\end{proof}
+
+
+\begin{theorem} \label{thm:NWA_STEINER_approximation_ratios}
+ The approximation ratios between the NWA and STEINER netlength estimations are
+ \begin{align*}
+  \inf_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} &= 0 \quad \text{and} \\
+  \sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} &= \sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})}
+ \end{align*}
+ where \(S = (\real^n \times \real^n) \setminus \Set{ t \cdot (\mathbf{1}, \mathbf{1}) | t \in \real} \)
+ is the space of all pin placements such that the netlength is not zero.
+\end{theorem}
+
+\begin{proof}
+ Let \((\mathbf{x}, \mathbf{y}) \in S \).
+ By \cref{thm:NWA_approximates_HPWL} \(\NWA_\gamma(\mathbf{x}, \mathbf{y}) \leq \HPWL(\mathbf{x}, \mathbf{y})\) and similarly to the proof above
+ \[
+      \sup_{\delta \to \infty} \frac{\NWA_\gamma (\delta \mathbf{x}, \delta \mathbf{y})}{\STEINER(\delta \mathbf{x}, \delta \mathbf{y})} 
+    = \sup_{\delta \to \infty} \frac{\NWA_{\gamma/\delta} (\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})}
+    = \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})}
+ \]
+ for all \((\mathbf{x}, \mathbf{y}) \in S \). This proofs the claim regarding the supremum.
+ 
+ The proof for the infimum is the same as before: 
+ Let \(\mathbf{x} = (a, 0, \ldots, 0)^T \) and \(\mathbf{y} = \mathbf{0}\) for some \(a > 0\).
+ In this case,
+ \begin{align*}
+      \lim_{a \to 0} \frac{\NWA_\gamma(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} 
+    &= \lim_{a \to 0} \frac{\frac{a \exp(a)}{\exp(a) + (n-1)} + \frac{-a \exp(-a)}{\exp(-a) + (n-1)}}{a} \\
+    &= \lim_{a \to 0} \frac{\exp(a)}{\exp(a) + (n-1)} - \frac{\exp(-a)}{\exp(-a) + (n-1)}
+    = 0 .
+ \end{align*}
+ which shows that the infimum is zero.
+\end{proof}
+
+
+\begin{remark}
+ It was shown in \cite{BrennerVygen-WorstCaseRatiosOfNetworksInTheRectilinearPlane} that 
+ \[\sup_{(\mathbf{x}, \mathbf{y}) \in S} \frac{\HPWL(\mathbf{x}, \mathbf{y})}{\STEINER(\mathbf{x}, \mathbf{y})} = 1 \]
+\end{remark}
+
+
+
+\subsection{Derivatives} \label{sec:NWA_derivatives}
+
+\begin{corollary} \label{thm:NWA_derivatives}
+ \(\overline{\NWA}_\gamma^N\) is twice continuously differentiable and the gradient and Hessian are
+ \begin{align*}
+  \nabla \overline{\NWA}_\gamma^N (\mathbf{x})   &= A(N)^T \BktR{\nabla \WA_{\gamma}(\mathbf{x}^P(N)) - \nabla \WA_{\gamma}(-\mathbf{x}^P(N))} \\
+  \nabla^2 \overline{\NWA}_\gamma^N (\mathbf{x}) &= A(N)^T \BktR{\nabla^2 \WA_{\gamma}(\mathbf{x}^P(N)) + \nabla^2 \WA_{\gamma}(-\mathbf{x}^P(N))} A(N)
+ \end{align*}
+ for all \(\mathbf{x} \in \real^n\) where \( \mathbf{x}^P(N) = A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N) \).
+\end{corollary}
+
+\begin{proof}
+ By the chain rule, 
+ \begin{align*}
+  \nabla \overline{\NWA}_\gamma (\mathbf{x})   &= \nabla \NWA_{\gamma}(\mathbf{x}) - \nabla \NWA_{\gamma}(-\mathbf{x}) \\
+  \nabla^2 \overline{\NWA}_\gamma (\mathbf{x}) &= \nabla^2 \NWA_{\gamma}(\mathbf{x}) + \nabla^2 \NWA_{\gamma}(-\mathbf{x}) .
+ \end{align*}
+ Combining this with \cref{thm:derivatives_after_affine_transformation} gives the claim.
+\end{proof}
+
+
+
+\subsection{Convexity} \label{sec:NWA_convexity}
+
+The following convexity result shows that contrary to \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns}
+not only the WA function is not convex but NWA as well.
+
+\begin{corollary} \label{thm:NWA_is_not_convex}
+ \(\overline{\NWA}_\gamma\) is not convex for any \(n \in \integers_{\geq 2}\).
+\end{corollary}
+
+\begin{proof}
+ Pick the same counterexample as in \cref{thm:WA_is_not_convex}: \(\mathbf{x} = ( \gamma a, 0, \ldots, 0)^T \in \real^n\).
+ From the proof of this theorem we know that there is an \(M > 2\) such that
+ \[ \mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(\mathbf{x}) } \mathbf{e}_1 < 0\]
+ for all \(a \in \real\) with \(\abs{a} > M\).
+ This implies that 
+ \(\mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(\mathbf{x}) } \mathbf{e}_1\) and
+ \(\mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(-\mathbf{x}) } \mathbf{e}_1\)
+ are negative for such an \(a\).
+ Therefore,
+ \[ \mathbf{e}_1^T \BktR{ \nabla^2 \overline{\NWA}_\gamma(\mathbf{x}) } \mathbf{e}_1 = \mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(\mathbf{x}) + \nabla^2 \WA_\gamma(-\mathbf{x}) } \mathbf{e}_1 < 0 \]
+ so the Hessian \(\nabla^2 \overline{\NWA}_\gamma(\mathbf{x})\) is not positive semidefinite for all \(\mathbf{x} \in \real^n\).
+\end{proof}
+
+
+\begin{remark}
+ This result cannot be extended to \(\overline{\NWA}_\gamma^N\) because with our mathematical description from \cref{sec:mathematical_description}
+ a net is allowed to contain only fixed pins.
+ In this case, \(\overline{\NWA}_\gamma^N\) would be constant and therefore convex.
+\end{remark}
+
+
+\begin{corollary}
+ \(\overline{\NWA}_\gamma^N\) is bounded by two convex functions:
+ \[ \overline{\HPWL}^N(\mathbf{x}) - 2 \gamma W(\tfrac{n-1}{e}) \leq \overline{\NWA}_\gamma^N(\mathbf{x}) \leq \overline{\HPWL}^N(\mathbf{x}). \]
+\end{corollary}
+
+\begin{proof}
+ \(\overline{\HPWL}\) is convex so \cref{thm:affine_transformation_preserves_convexity} shows that \(\overline{\HPWL}^N(\mathbf{x})\) is convex.
+ The inequalities follow from \cref{thm:WA_approximates_max}.
+\end{proof}
+
+
+
+\subsection{Lipschitz Continuous Gradient} \label{sec:NWA_Lipschitz_continuous_gradient}
+
+\begin{corollary} \label{thm:NWA_Lipschitz_constant_upper_bound}
+ \(\nabla \overline{\NWA}_\gamma^N\) is Lipschitz continuous.
+\end{corollary}
+
+\begin{proof}
+ \(\nabla \overline{\NWA}_\gamma\) is Lipschitz continuous by \cref{thm:WA_Lipschitz_constant_upper_bound}:
+ \begin{align*}
+   \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \overline{\NWA}_\gamma(\mathbf{x})}_2 
+   &= \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \WA_\gamma(\mathbf{x}) + \nabla^2 \WA_\gamma(-\mathbf{x})}_2 \\
+   &\leq \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \WA_\gamma(\mathbf{x})}_2 + \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \WA_\gamma(-\mathbf{x})}_2 \\
+   &= \frac{2}{\gamma} + \frac{2+2\sqrt{2}}{\gamma^2} \sqrt{n} \cdot W(\tfrac{n-1}{e}) .
+ \end{align*}
+ Combining this with \cref{thm:affine_transformation_preserves_Lipschitz_continuity} gives the claim.
+\end{proof}
+
+\begin{remark}
+ Analogous to the remark after \cref{thm:NLSE_Lipschitz_constant_upper_bound},
+ we get the following upper bound for the Lipschitz constant of \(\nabla \overline{\NWA}_\gamma^N\):
+ \[ \sup_{\mathbf{x} \in \real^n} \norm{\nabla^2 \overline{\NWA}_\gamma^N(\mathbf{x})}_2 \leq \abs{N} \BktR{ \frac{2}{\gamma} + \frac{2+2\sqrt{2}}{\gamma^2} \sqrt{n} \cdot W(\tfrac{n-1}{e}) }. \]
+\end{remark}

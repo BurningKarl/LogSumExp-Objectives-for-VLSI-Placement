@@ -1,0 +1,273 @@
+\chapter{Global Placement} \label{chap:global_placement}
+
+This chapter will give an overview of the global placement problem, its origin and its mathematical formalization.
+Afterwards, the netlength estimations that play a role in this thesis are presented.
+
+\section{Global Placement and Chip Design} \label{sec:global_placement_and_chip_design}
+
+Global placement is one of the automated steps in the chip design process.
+In order to explain the role of global placement, the following section will be a rough depiction of the chip design process.
+For more detailed information about the chip design process we refer to
+\cite{AlpertMehtaSapatnekar-HandbookOfAlgorithmsForPhysicalDesignAutomation} and \cite{LavagnoMarkovMartinScheffer-EDAImplementationCircuitDesignProcessTechnology}.
+
+At the start of the chip design process the behavior and performance details of the chip need to be specified.
+Then these requirements are translated into a set of prebuilt rectangular components and connections between these components.
+The components are called cells, their in- and outputs are called pins 
+and the connections are specified in terms of sets of pins that are electrically equivalent and need to be connected.
+In one of the last steps prior to production this representation is converted into a geometric model of the final chip
+satisfying performance and manufacturing requirements.
+This step is called \emph{physical design} and while it is already largely automated
+physical design automation remains an active area of research
+that aims at further improving the existing algorithms and solving new problems that come up with new advancements in chip technology.
+
+Physical design is further split up into multiple stages.
+These stages are not only executed one after the other
+but often the results of later stages are used to adapt design decisions which then also influence the earlier stages.
+The two major steps that are necessary to understand the core optimization problem of this thesis are \emph{placement} and \emph{routing}.
+Placement tries to find valid positions for the components and routing defines the paths of the conductors that connect the pins as specified afterwards.
+The placement results heavily influence the results of the routing step and are important for the final performance of the chip.
+
+This leads to the question of how the performance of a chip is measured. 
+What is the objective function of placement and routing?
+While there are multiple desired traits of a chip such as short cycle times, low power consumption, and low manufacturing cost, 
+it is hard to put them in a single objective function and it would be even harder to optimize this objective function.
+Therefore, an objective function is used that is easier to handle and correlates with these design goals: 
+Total weighted wirelength, i.e. the weighted sum of the lengths of the conductor paths that connect the pins.
+Lower wirelength leads to less resistance, less heat and less power consumption and also shorter cycle times.
+Weights are introduced to put emphasis on certain connections, for example those that are critical for faster clock cycles.
+
+When choosing wirelength as the objective for placement and routing, a new problem arises.
+To compute the total weighted wirelength during placement, we would need to execute a complete routing step and evaluate it afterwards.
+This is not feasible since the runtime would be too high.
+Instead, the total weighted wirelength is estimated with a simple function that is fast to evaluate.
+Taking all those considerations into account, we might formulate the placement problem this way:
+Find positions for all cells such that the estimated total weighted wirelength is minimal while the cells do not overlap and meet some additional requirements.
+
+A standard requirement is that the cells need to fit into the power grid that is already laid out on the chip.
+The chip area is partitioned into rows that lie between power lines alternating between current supply and ground.
+The majority of the cells have a height of exactly one row, these are called standard cells, and some have a height spanning multiple rows, these are called macros.
+To correctly fit within the power grid now means that all cell positions have to be aligned with these vertical rows.
+Further requirements often include that some cells are only allowed to occupy certain areas of the chip
+(some ares might be blocked by previously placed large chip components)
+and that the cells need to leave enough free space for the conductor paths.
+This shows how complex the placement task can become once all practical demands are formulated.
+
+However, since the placement problem is still too hard to be tackled at once, it is instead split up into three steps:
+The first step called \emph{global placement} tries to determine well-spread cell position with little overlap and low estimated wirelength.
+The result is then taken as the input to the \emph{legalization} step which tries to legalize it with as little movement of the cells as possible.
+Here, a legal placement refers to a placement without any overlaps that also fulfills the additional requirements mentioned above.
+Often, an additional optimization step called \emph{detailed placement} is applied to the legal placement to find local improvements not violating any constraints.
+In this thesis we will consider a simplification of the global placement task:
+Minimization of wirelength estimations without any constraints, in particular without considering cell overlaps.
+
+Solving this problem can be combined with an iterative geometric partitioning approach (see \cite[pp. 12-16]{BrennerVygen-AnalyticalMethodsInVlsiPlacement})
+that assigns the cells to smaller and smaller regions of the chip to spread out the cells evenly and reduce overlap.
+The idea is to minimize the wirelength estimation for all cells at once first,
+then use this placement to assign the cells to regions (for example the four quadrants of the chip) such that the cell density in each region is reasonable,
+minimize wirelength estimations in each region, subdivide the regions
+and continue alternating between minimization and partitioning until the regions are small enough
+for the legalization step.
+This means that even though minimizing the netlength estimation for all cells at once will most likely not produce
+a placement that is even close to an optimal overlap-free placement,
+it should provide useful insights into the relative placements
+of the cells, i.e. if a cell should rather be placed on the left half of the chip or on the right half
+and if cell A should rather be placed above or below cell B.
+
+\section{Mathematical Description} \label{sec:mathematical_description}
+
+At this point, we will introduce the mathematical formalism necessary to rigorously state the global placement problem.
+Note that this description of the global placement problem is a simplification of the what needs to be done in the global placement step as discussed above.
+We will mostly follow the notation in \cite{BrennerVygen-AnalyticalMethodsInVlsiPlacement}. 
+There are four main ingredients: The set of movable cells \(C\), the set of pins \(P\), the set of nets \(\mathcal{N}\) and the rectangular chip area \([x_{\min}, x_{\max}] \times [y_{\min}, y_{\max}]\).
+
+The cells are rectangular components to be placed on the chip area, but since there are no disjointness constraints we do not care about their shape.
+We distinguish between movable and fixed cells: 
+Fixed cells are already placed beforehand and cannot be moved
+while movable cells are those that we are given the task to determine the position of.
+The position of (an anchor point of) a movable cell \(c \in C\) is denoted by \((x(c), y(c)) \in \real^2\).
+We also use \(\mathbf{x}^C, \mathbf{y}^C \in \real^C\) as vectors containing all cell positions of movable cells.
+
+Every cell has one or more pins whose relative positions are specified by some offset to the anchor point of the cell.
+For fixed cells we may specify the offsets relative to a global anchor point instead of multiple cell-specific anchor points.
+Therefore, we assume that there is exactly one fixed cell with coordinates \((0, 0)\) which we will call \(\square\).
+To denote that the pin \(p \in P\) belongs to the cell \(c \in C \cup \{\square\}\),
+we will write \(\alpha(p) = c\) and the offset of the pin \(p\) relative to the anchor point of \(\alpha(p)\)
+is denoted by \((x_{\offs}(p), y_{\offs}(p)) \in \real^2\).
+
+Lastly, \(\mathcal{N}\) is a partition of \(P\) into sets containing at least two elements. 
+Each net \(N \in \mathcal{N}\) represents a set of pins that need to be connected on the final chip.
+Because not all nets are equally important, a weight \(w(N) \in \real_{\geq 0}\) is assigned to every net \(N\).
+The information about cells, pins, pin offsets and nets combined is called the \emph{netlist}.
+
+Let \(L \colon \Set{V \subseteq \real^2 | 2 \leq \abs{V} < \infty} \to \real_{\geq 0}\) be a function that estimates the length of the wires required to connect all pins in a net given their positions (the \emph{netlength}).
+Now, the the global placement problem is to find values \(x(c) \in [x_{\min}, x_{\max}]\) and \(y(c) \in [y_{\min}, y_{\max}]\) for each movable cell \(c \in C\) such that the weighted sum of netlengths
+\[ \sum_{N \in \mathcal{N}} w(N) L\BktR{\Set{\BktR{x(\alpha(p)) + x_{\offs}(p), \ y(\alpha(p)) + y_{\offs}(p)} \mid p \in N}} \]
+is minimized. 
+
+All netlength estimations \(L\) have the property that a translation of all pins in a net leaves the value unchanged.
+If there is a connected component in the hypergraph \((P, \mathcal{N})\) without a fixed pin,
+there is no unique optimal placement and the choice of an optimal placement of (a part of) the cells will be arbitrary
+because all cell positions in this connected component can be shifted simultaneously without changing the value of the objective function.
+To avoid this problem, we will only consider those instances of the problem in which each connected component in the hypergraph \((P, \mathcal{N})\)
+contains at least one fixed pin. This is typically the case for all practical instances.
+
+Additionally, we assume that \(x_{\offs}(p) \in [x_{\min}, x_{\max}]\) and \(y_{\offs}(p) \in [y_{\min}, y_{\max}]\) for every fixed pin \(p\).
+In practice, all pin offsets of pins of movable cells are small and
+any selection of cell positions that minimizes the objective function will meet the condition 
+that \(x(c) \in [x_{\min} - \varepsilon, x_{\max} + \varepsilon]\) and \(y(c) \in [y_{\min} - \varepsilon, y_{\max} + \varepsilon]\) 
+for all \(c \in C\) and some small \(\varepsilon > 0\).
+(Moving a cell away from the chip area only increases the distance to every fixed pin.)
+Thus, the objective function changes very little if one just moves every cell
+that lies outside of the chip area in an optimal solution
+to the closest position inside the chip area afterwards and the solution stays close to optimal.
+In this sense it suffices to solve the unconstrained minimization problem
+and this property is necessary for the convex optimization methods used in this thesis.
+
+For brevity we introduce some additional notation:
+Let \(\mathbf{x}^P_{\offs}(N), \mathbf{y}^P_{\offs}(N) \in \real^N\) be the vectors containing the pin offsets of the pins in a net \(N\)
+and \(A(N) \in \real^{N \times C}\) be the matrix that maps cells to pins of \(N\) by setting \((A(N))_{p, c} = 1\) if \(\alpha(p) = c\) and 0 otherwise.
+Multiplying a vector with entry 1 at position \(c \in C\) with this matrix gives a vector with entry 1 at each pin of \(N\) belonging to cell \(c\).
+These definitions allow us to express the pin positions \(\mathbf{x}^P(N), \mathbf{y}^P(N) \in \real^N\) in \(N\) 
+as an affine linear transformation of the cell positions:
+\[ \mathbf{x}^P(N) = A(N) \mathbf{x}^C + \mathbf{x}_{\offs}^P(N) \quad \text{and} \quad \mathbf{y}^P(N) = A(N) \mathbf{y}^C + \mathbf{y}_{\offs}^P(N) \]
+By defining \(L(\mathbf{x}, \mathbf{y})\) as a shorthand for \(L(\set{ (x_i, y_i) | 1 \leq i \leq n })\) for \(\mathbf{x}, \mathbf{y} \in \real^n\),
+we can write the objective function of the global placement problem as
+\[T_L(\mathbf{x}, \mathbf{y}) \deq \sum_{N \in \mathcal{N}} w(N) L \BktR{A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N), A(N) \mathbf{y} + \mathbf{y}_{\offs}^P(N)}\]
+
+At this point, it is clear that there is a difference between a netlength estimation \(L\) and its corresponding single net objective function.
+While \(L\) estimates the netlength based on the pin positions,
+the corresponding objective function estimates the netlength based on the cell positions (using \(L\)).
+Whenever we mean the objective function for a net \(N\), we will use
+\[ L^N(\mathbf{x}, \mathbf{y}) = L \BktR{A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N), A(N) \mathbf{y} + \mathbf{y}_{\offs}^P(N)} \]
+as an abbreviation.
+
+
+
+\section{Netlength Estimation} \label{sec:netlength_estimation}
+
+An important factor for the performance of any algorithm that aims to solve the global placement problem is the choice of the function that estimates the netlength.
+In this thesis, our goal is to compare different netlength estimations and their optimization methods.
+This section should serve as an overview of the estimations in this thesis as well as some important ones in practice and theory.
+
+When routing a chip, i.e. laying out all the conductor paths on the chip, these paths can only go horizontally or vertically, never diagonally.
+In other words, the rectilinear distance is used to measure the length of a conductor path between two pins on the chip.
+Because of this property, some functions that are estimating the netlength are a sum of the estimated netlength in x direction
+and the estimated netlength in y direction.
+Of course, there is no substantial difference between those directions so these functions (most often) are of the form:
+\( L(\mathbf{x}, \mathbf{y}) = \overline{L}(\mathbf{x}) + \overline{L}(\mathbf{y}) \).
+This property allows us to optimize x- and y-values independently from one another allowing for parellel execution of the optimization processes.
+
+We will also use property of the netlength approximations to shorten the notation in this thesis. 
+Whenever there is a bar above a function \(L\) estimating the netlength it refers to the one-dimensional part of \(L\)
+and the corresponding function for two dimensions is \(\overline{L}(\mathbf{x}) + \overline{L}(\mathbf{y})\).
+To be well-defined, we set \(\overline{L}^N\) to be the one-dimensional single net objective function in x-direction
+but this notation will only be used in a general setting in which this decision does not matter.
+
+\subsection{Rectilinear Steiner Trees} \label{subsec:rectilinear_steiner_trees}
+As already mentioned, conductor paths can only go horizontally or vertically.
+So when routing a single net, the lowest total wirelength can be achieved by routing with a shortest rectilinear Steiner tree
+where the terminals are the pin positions.
+This makes the length of a shortest rectilinear Steiner tree an obvious starting point for netlength estimation.
+We will denote this length as \(\STEINER(\mathbf{x}, \mathbf{y})\).
+Unfortunately, finding the length of a shortest rectilinear Steiner tree for a given set of points in the plane is NP-hard as shown in \cite{GareyJohnson-RectilinearSteinerTree}.
+Because algorithms to determine a shortest (or even just sufficiently short) rectilinear Steiner tree are often very complex and time-consuming,
+this netlength estimation is not often used in practice.
+Also, this function will not be discussed in this thesis except for some theoretical comparisons.
+
+\subsection{Half-Perimeter Wirelength} \label{subsec:hpwl}
+The \emph{half-perimeter wirelength} (HPWL) or \emph{bounding box} heuristic estimates the netlength as half the perimeter of the bounding box of the pin positions:
+\begin{align*}
+ \HPWL(\mathbf{x}, \mathbf{y}) &\deq \max_{i, j \in \{1, \ldots, n\}} \abs{x_i - x_j} + \max_{i, j \in \{1, \ldots, n\}} \abs{y_i - y_j} \\
+                               &= \max(\mathbf{x}) - \min(\mathbf{x}) + \max(\mathbf{y}) - \min(\mathbf{y})
+\end{align*}
+The advantage of this expression is that it is easy to write and fast to evaluate.
+For nets with two or three pins the HPWL coincides with the length of a rectilinear Steiner tree.
+The HPWL is the standard metric to compare the wirelength of placements in benchmarks suites like the 
+ISPD 2005 \cite{NamAlpertVillarrubiaWinterYildiz-ISPD2005BenchmarkSuite} and ISPD 2006 \cite{Nam-ISPD2006BenchmarkSuite}.
+This function is not differentiable thus excluding analytical methods as optimization methods 
+but the minimization of weighted wirelength with HPWL as netlength estimation can be formulated as an LP or a MinCostFlow problem
+as shown in \cite[pp. 5-7]{BrennerVygen-AnalyticalMethodsInVlsiPlacement}.
+
+\subsection{Quadratic Wirelength} \label{subsec:qp}
+The idea of quadratic wirelength is to replace the rectilinear distance function
+\[d_L((x_p, y_p), (x_q, y_q)) = \abs{x_p - x_q} + \abs{y_p - y_q}\]
+which is not differentiable by a quadratic distance function 
+\[d_Q((x_p, y_p), (x_q, y_q)) = \BktR{x_p - x_q}^2 + \BktR{y_p - y_q}^2 .\]
+Because a distance function can not handle more than two points a netmodel is used to break down a net with more than two pins into two pin nets.
+A classic example of such a netmodel is the CLIQUE net model.
+It transforms a net \(N\) into \(\binom{\abs{N}}{2}\) two pin nets by creating a new net for each pair of pins.
+To keep large nets from dominating the objective function, each new net is weighted by \(\frac{1}{\abs{N}-1}\).
+The resulting netlength estimation is
+\[ \QCLIQUE(\mathbf{x}, \mathbf{y}) \deq \frac{1}{\abs{N}-1} \sum_{i, j \in \{1, \ldots, n\}} (x_i - x_j)^2 + (y_i - y_j)^2 . \]
+For an overview of different net models and quadratic wirelength we refer to \cite{BrennerVygen-AnalyticalMethodsInVlsiPlacement}.
+Minimizing quadratic wirelength is, for example, used in GORDIAN \cite{KleinhansSiglJohannesAntreich-GORDIAN} and BonnPlace \cite{BrennerStruzyna-GlobalPlacement}.
+Replacing the distance function comes at the cost of a skewed objective function which might lead to suboptimal results when evaluated with HPWL.
+
+\subsection{LogSumExp} \label{subsec:nlse}
+The usage of the \emph{LogSumExp} (LSE) function in placement was proposed in \cite{NaylorDonellySha-USPatent} and was used in multiple nonlinear placers 
+such as mPL6 \cite{ChanCongShinnerlSzeXie-MPL6}, NTUplace3 \cite{ChenJiangHsuChenChang-NTUplace3} and APlace \cite{KahngWang-APlace}.
+The LSE function itself is defined as 
+\[ \LSE_{\gamma}(\mathbf{x}) = \gamma \log \BktR{\sum_{i = 1}^n \exp \BktR{\frac{x_i}{\gamma}}}, \quad \gamma > 0 \]
+for all \(\mathbf{x} \in \real^n\) and approximates the maximum function.
+Because the HPWL can be written solely in terms of the maximum function,
+we may use the \(\LSE\) function to get a differentiable approximation of HPWL
+which we will call \emph{Netlength-LogSumExp} (NLSE):
+\[ \overline{\NLSE}_{\gamma}(\mathbf{x}) \deq \LSE_{\gamma}(\mathbf{x}) + \LSE_{\gamma}(-\mathbf{x}) \approx \max(\mathbf{x}) + \max(-\mathbf{x}) = \overline{\HPWL}(\mathbf{x}) .\]
+
+\subsection{Weighted-Average} \label{subsec:nwa}
+A close relative to the LSE function is the \emph{Weighted-Average} (WA) function defined as
+\[ \WA_{\gamma}(\mathbf{x}) = \frac{\sum_{i = 1}^n x_i \exp(x_i / \gamma)}{\sum_{i = 1}^n \exp(x_i / \gamma)}, \quad \gamma > 0 \]
+which has been proposed in \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns} and used in ePlace \cite{LuChenChangShaHuangTengCheng-ePlace}.
+It approximates the maximum function even better than LSE in terms of absolute error and can also be used to get a differentiable approximation of HPWL 
+which we will call \emph{Netlength-Weighted-Average} (NWA) in the same way as above:
+\[ \overline{\NWA}_{\gamma}(\mathbf{x}) \deq \WA_{\gamma}(\mathbf{x}) + \WA_{\gamma}(-\mathbf{x}) \approx \max(\mathbf{x}) + \max(-\mathbf{x}) = \overline{\HPWL}(\mathbf{x}) .\]
+
+\subsection{A Visual Comparison} \label{subsec:visual_netlength_comparison}
+
+The previous description mostly consists of formulas.
+To get a direct visual comparison, \cref{fig:one_dimensional_netlength_comparison}
+graphs all of the netlength estimations above (except for STEINER)
+for a net with one fixed pin at coordinates \((0, 0)\) and one movable pin at coordinate \((x, 0)\).
+The STEINER netlength estimation is omitted because it coincides with the HPWL netlength estimation for a two-pin net.
+
+\begin{figure}[ht]
+ \centering
+ \begin{tikzpicture}
+  \newcommand\XRANGE{4.5}
+  \begin{axis}[
+    width=\textwidth-1cm,
+    height=(\textwidth-1cm)/2,
+%     axis lines=left,
+    xmin=-\XRANGE, xmax=\XRANGE,
+    ymin=0, ymax=\XRANGE,
+    legend pos=south west,
+    every axis plot/.append style={
+      domain=-(\XRANGE + 1):(\XRANGE + 1),
+      samples=201,
+      ultra thick,
+    },
+    xlabel=\(x\),
+    ylabel=Netlength estimation,
+  ]
+    \addlegendentry{\(\HPWL\)}
+    \addplot[red]
+      {abs(x)};
+
+    \addlegendentry{\(\QCLIQUE\)}
+    \addplot[blue]
+      {x^2};
+
+    \addlegendentry{\(\NLSE_1\)}
+    \addplot[SpringGreen]
+      {ln(exp(0) + exp(x)) +
+	ln(exp(0) + exp(-x))};
+
+    \addlegendentry{\(\NWA_1\)}
+    \addplot[OliveGreen]
+      {(0*exp(0) + x*exp(x))/(exp(0) + exp(x)) +
+	(0*exp(0) - x*exp(-x))/(exp(0) + exp(-x))};           
+  \end{axis}
+ \end{tikzpicture}
+ \caption{One-dimensional netlength estimations for a net with one fixed and one movable pin}
+ \label{fig:one_dimensional_netlength_comparison}
+\end{figure}

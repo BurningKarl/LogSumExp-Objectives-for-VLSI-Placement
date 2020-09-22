@@ -1,0 +1,89 @@
+% Mathematical statements
+
+%% Basic environments
+\newtheorem{theorem}{Theorem}[chapter] % label starts with 'thm:'
+\newtheorem{lemma}[theorem]{Lemma} % label starts with 'thm:'
+\newtheorem{corollary}[theorem]{Corollary} % label starts with 'thm:'
+
+\theoremstyle{definition} 
+\newtheorem{definition}{Definition}[chapter] % label starts with 'def:'
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark} % label starts with 'rem:'
+
+% Problem formulations
+\newcommand{\boxedDescription}[5]{%
+ %Note: It appears the first setlength in each scope will be reset.
+ % This is why we use separate scopes for each \setlength invocation.
+ {%
+  \setlength{\parskip}{\topsep}% Add the same enclosing spacing as used for AMS theorems, etc.
+   {%
+    \setlength{\fboxsep}{5pt}% increased spacing inside frame
+     {%
+      \setlength{\parindent}{0pt}% disable standard paragraph indent
+       \framebox[\textwidth][c]{%
+        \begin{tabular}{%
+          @{\hspace{\fboxsep}}
+          l@{}
+          @{\hspace{\fboxsep}}
+          p{\textwidth-3\fboxsep-\maxof{\widthof{#1}}{\widthof{#2}}}@{\hspace{\fboxsep}}
+        }%
+         \multicolumn{2}{p{\textwidth-2\fboxsep}}{%
+          \textcolor{dark_blue}{\Large{\textsc{#3}}}} \\ %
+         \textit{#1:} & #4 \\ %
+         \textit{#2:} & #5 \\ %
+        \end{tabular}%
+       }%
+     }%
+   }%
+  \vspace{\topsep}
+ }%
+}
+
+\newcommand{\problemBase}[3]{%
+ \boxedDescription{Instance}{Task}{#1}{#2}{#3}%
+}
+
+\newcommand{\problemIndex}[4]{
+ \index{#2|(}%
+ \problemBase{#1}{#3}{#4}%
+ \index{#2|)}%
+}
+
+\newcommand{\problem}[3]{
+ \problemIndex{#1}{#1@\textsc{#1}}{#2}{#3}
+}
+
+
+% Term Definitions
+\newcommand{\defineNoIndex}[1]{%
+ \textcolor{dark_blue}{%
+  \mathversion{bold}%
+  \textbf{{#1}}%
+  \mathversion{normal}%
+ }%
+}
+\newcommand{\define}[2][EMPTY]{%
+ \defineNoIndex{#2}%
+ \ifthenelse{\equal{#1}{EMPTY}}{\index{#2@\protect\capitalisewords{#2}}}{\index{#1}}%
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Todo helpers
+\newcommand{\todoCite}[1][Citation Required]{%
+ \todo[%
+  backgroundcolor=dark_green!5,%
+  bordercolor=dark_green,%
+  linecolor=dark_green,%
+  noinline]{#1}
+}
+
+\newcommand{\todoImportant}[2][noinline]{%
+ \todo[%
+  backgroundcolor=red!5,%
+  bordercolor=red,%
+  linecolor=red,%
+  #1]{#2}
+}
+

@@ -1,0 +1,51 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fixed-width/height tikzpicture scaling environment
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% When scaling figures using e.g. adjustbox,
+% label texts will be scaled as well, leading to incorrect font sizes.
+% Note that when scaling a tikzpicture (using its scale option),
+% instead the coordinate system is scaled, not affecting font sizes.
+% The code below defines new environments tikzpicture{fw,fh} which
+% takes one required argument, which defines the target width/height of the figure.
+% The result will behave exactly like a normal tikzpicture together
+% with a scale option that matches the given target width/height.
+%
+% Example usage:
+% \begin{tikzpicturefw}{5cm}
+%  \fill [blue] (0,0) rectangle (2,2);
+%  \node at (1,1) {Huhu};
+% \end{tikzpicturefw}
+%
+% originates from
+% https://tex.stackexchange.com/questions/6388/how-to-scale-a-tikzpicture-to-textwidth
+% but instead of a global variable for the length,
+% uses a required argument specifying the resulting width
+\makeatletter
+\newsavebox{\box@tikzpicture}
+% first optional arg: arguments for tikzpicture
+% required arg: width of resulting figure
+\NewEnviron{tikzpicturefw}[2][]{%
+  \begin{lrbox}{\box@tikzpicture}%
+  \begin{tikzpicture}[#1]
+     \BODY
+  \end{tikzpicture}%
+  \end{lrbox}%
+  \pgfmathsetmacro\width@scale@picture{#2/\wd\box@tikzpicture}%
+  \begin{tikzpicture}[#1,scale=\width@scale@picture]
+    \BODY
+  \end{tikzpicture}%
+}%
+% fixed height variant
+\NewEnviron{tikzpicturefh}[2][]{%
+  \begin{lrbox}{\box@tikzpicture}%
+  \begin{tikzpicture}[#1]
+     \BODY
+  \end{tikzpicture}%
+  \end{lrbox}%
+  \pgfmathsetmacro\height@scale@picture{#2/\ht\box@tikzpicture}%
+  \begin{tikzpicture}[#1,scale=\height@scale@picture]
+    \BODY
+  \end{tikzpicture}%
+}%
+\makeatother

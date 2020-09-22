@@ -1,0 +1,94 @@
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman,english]{babel}
+\usepackage{csquotes}
+\usepackage[%
+ pdfpagelabels,
+ hyperindex,
+ hypertexnames=false,  % Make link-names unique -- even in corner cases of subequations
+ hidelinks,
+ bookmarksopen=true,
+ bookmarksopenlevel=1,
+]{hyperref}  % linked refs
+% Former hyperref options: plainpages=false, backref=page for backref in the bibliography
+\usepackage{booktabs} % Great tables
+\usepackage[
+ labelfont=bf,  % bold labels (eg. for "Figure 1")
+ margin=3em,  % Reduce caption width by this margin on both sides
+]{caption}  % caption styling for figures / tables
+\usepackage[
+ labelformat=simple,  % no extra braces in label. We add add those always by redefining \thesubfigure
+]{subcaption}  % subfigure (several subfigures withing one figure)
+\usepackage[Export]{adjustbox}  % improved includegraphics (ie. with frame options)
+\usepackage{fancyhdr}  % manual head / foot config
+\usepackage[
+ ruled,
+ vlined,
+ linesnumbered,
+ algochapter,  % number algorithms with leading chapter numbers
+]{algorithm2e}
+\usepackage{siunitx}  % units (SI)
+
+\usepackage{mathtools}  % provides all math environments including many ams* packages.
+\usepackage{amsthm}  % for \theoremstyle
+\usepackage{amssymb}  % special symbols like \vartriangleleft
+
+%\usepackage{float}
+\usepackage{rotating} % provides the sidewaysfigure environment
+\usepackage{multirow}
+\usepackage{array}  % fine grained control over tabular spacing
+\usepackage{calc}  % lenthof, maxof
+\usepackage{verbatim}
+\usepackage[normalem]{ulem} % provides \uline to underline more beautifully
+
+\usepackage[
+  backend=biber, % welcome to the 21st century
+  style=alphabetic,
+  date=year,  % don't show months in bibliography
+  url=false, % don't show in bibliography
+%   doi=false, % don't show in bibliography
+  isbn=false, % don't show in bibliography
+  eprint=false, % don't show in bibliography
+  maxcitenames=3, % shorten more cited names than this number to "et. al."
+  maxbibnames=99, % disable shortening in bibliography
+  giveninits=true, % Abbreviate forenames
+  uniquename=init, % enable name disambiguation based on initials
+  backref=true, % Link bibliography entries to places they were cited from
+  backrefstyle=three, % Generate backrefs using list notation
+  datamodel=citations/articleno, % Use special handling for article numbers
+  mincrossrefs=99, % min number of crossrefs that make the ref'd entity appear separately. disable this feature.
+]{biblatex}
+% Clear a bunch of details that we don't like in the bibliography.
+\AtEveryBibitem{
+ \clearlist{publisher}
+ \clearlist{location}
+ \clearfield{series}
+}
+% This affects how names are printed in the bibliography.
+% Terminology: given = forename, family = surname.
+% By default, authoryear prints as 'familiy-given/given-familiy', ie. Wurst, H., W. Fritz.
+% Change this to 'H. Wurst, W. Fritz' for reasons of consistency.
+\DeclareNameAlias{sortname}{given-family}
+
+\usepackage{makeidx}  % for \printindex
+\makeindex  % enable index generation
+
+\usepackage[
+ capitalise,
+ nameinlink,
+ noabbrev]{cleveref}  % cref
+\crefname{line}{line}{lines}
+
+%\usepackage[
+% colorinlistoftodos,
+% backgroundcolor=dark_blue!5,
+% bordercolor=dark_blue,
+% linecolor=dark_blue,
+% obeyDraft]{todonotes} % for advanced todo commands
+
+\usepackage{mleftright}  % provides mleft/mright substitutes with improved spacing
+\usepackage{mfirstuc}  % provides capitalisewords
+\usepackage{braket} % provides \Set with scaled middle |
+
+\usepackage[dvipsnames]{xcolor}
+
+\subimport{./}{tikz_config.tex}

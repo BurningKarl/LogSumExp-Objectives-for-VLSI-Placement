@@ -1,0 +1,278 @@
+\section{Weighted-Average} \label{sec:theoretical_properties_of_WA}
+
+The Weighted-Average function was proposed to be used in placement in \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns}
+but the analysis of the function presented in this paper lacks detailed proofs for most of the claims.
+It is shown that in terms of absolute error the WA function approximates the maximum function better than the LSE function.
+Furthermore, strict convexity and continuous differentiability are claimed without proof.
+we will thoroughly investigate the properties of this function and
+conclude that the function is indeed continuously differentiable but not convex.
+
+
+\subsection{Definition} \label{sec:WA_definition}
+
+
+\begin{definition} \label{def:WA}
+ Let \(n \in \integers_{\geq 1}\). The Weighted-Average function \(\WA_\gamma \colon \real^n \to \real\) is defined as
+ \[ \WA_\gamma(\mathbf{x}) = \frac{\sum_{k=1}^n x_k \exp(x_k / \gamma)}{\sum_{k=1}^n \exp(x_k / \gamma)} = \sigma(\mathbf{x} / \gamma)^T \mathbf{x} \]
+ where \(\gamma > 0\) is referred to as the smoothing parameter.
+\end{definition}
+
+
+\begin{remark}
+ The name originates from the last equality:
+ \(\WA_\gamma(\mathbf{x})\) is the weighted average of \(\mathbf{x}\) where the weights are determined by the softmax function.
+ This way, larger values of an entry in \(\mathbf{x}\) will result in a higher weight
+ and we will show that this leads to a better approximation of the maximum function compared to the LSE function.
+\end{remark}
+
+
+
+\subsection{Approximation Properties} \label{sec:WA_approximation_properties}
+
+\begin{theorem}[\cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns}, Theorem 1] \label{thm:WA_approximates_max}
+ The WA function is an approximation of the maximum function in the following sense:
+ \[ \max (\mathbf{x}) - \gamma W (\tfrac{n-1}{e}) \leq \max (\mathbf{x}) - \frac{\Delta \mathbf{x}}{1 + \frac{\exp(\Delta \mathbf{x} / \gamma)}{n-1}} \leq \WA_\gamma (\mathbf{x}) \leq \max (\mathbf{x}) \quad \forall \mathbf{x} \in \real^n \]
+ where \(\Delta \mathbf{x} = \max(\mathbf{x}) - \min(\mathbf{x})\) and \(W\) is the Lambert W function.
+\end{theorem}
+
+\begin{proof}
+ \(\WA_\gamma(\mathbf{x})\) is the weighted average of the elements of \(\mathbf{x}\) and the weights sum up to one, so 
+ \(\min(\mathbf{x}) \leq \WA_\gamma(\mathbf{x}) \leq \max(\mathbf{x})\).
+ 
+ To show the first lower bound from the claim, let us assume without loss of generality that \(x_1 \geq \ldots \geq x_n\).
+ This implies that \(\Delta \mathbf{x} = x_1 - x_n\).
+ Now
+ \begin{align*}
+   \max(\mathbf{x}) - \WA_\gamma(\mathbf{x}) &= x_1 - \sum_{k=1}^n \sigma_k(\mathbf{x} / \gamma) x_k \\
+                                             &= (1 - \sigma_1(\mathbf{x} / \gamma)) x_1 - \sum_{k=2}^n \sigma_k(\mathbf{x} / \gamma) x_k \\
+                                             &\leq (1 - \sigma_1(\mathbf{x} / \gamma)) x_1 - \sum_{k=2}^n \sigma_k(\mathbf{x} / \gamma) x_n \\
+                                             &= \BktR{ \sum_{k=2}^n \sigma_k(\mathbf{x} / \gamma) } x_1 - \BktR{ \sum_{k=2}^n \sigma_k(\mathbf{x} / \gamma) } x_n \\
+                                             &= \frac{ \sum_{k=2}^n \exp(x_k / \gamma) }{ \sum_{k=1}^n \exp(x_k / \gamma) } (x_1 - x_n)
+                                             = \frac{\Delta \mathbf{x}}{1 + \frac{ \exp(x_1 / \gamma) }{ \sum_{k=2}^n \exp(x_k / \gamma) }} \\
+                                             &\leq \frac{\Delta \mathbf{x}}{1 + \frac{ \exp(x_1 / \gamma) }{ \sum_{k=2}^n \exp(x_n / \gamma) }}
+                                              = \frac{\Delta \mathbf{x}}{1 + \frac{ \exp(x_1 / \gamma - x_n / \gamma) }{ n - 1 }} \\
+                                             &= \frac{\Delta \mathbf{x}}{1 + \frac{ \exp(\Delta \mathbf{x} / \gamma) }{ n - 1 } }
+ \end{align*}
+ For the case \(x_2 = x_3 = \ldots = x_n\) all inequalities are tight.
+ 
+ In the last part, we will give a bound on \(\max(\mathbf{x}) - \WA_\gamma(\mathbf{x})\) that is independent of \(\mathbf{x}\).
+ Let \(f_\gamma \colon \real_{\geq 0} \to \real\) be defined by
+ \[ f_\gamma(z) = \frac{z}{1 + \frac{\exp(z/\gamma)}{n-1}} \]
+ then \(\sup_{\mathbf{x} \in \real^n} \BktR{ \max(\mathbf{x}) - \WA_\gamma(\mathbf{x}) } = \sup_{z \in \real_{\geq 0}} f_\gamma(z)\).
+ We can easily see that \(\lim_{z \to 0} f_\gamma(z) = \lim_{z \to \infty} f_\gamma(z) = 0\), \(f_\gamma(z) \geq 0\) for all \(z \in \real\) 
+ and \(f_\gamma \neq 0\).
+ These observations let us conclude that there is a global maximum in the interior of the domain.
+ The function is differentiable and its derivative is 
+ \[ f'_\gamma(z) = \frac{1 + \frac{\exp(z / \gamma)}{n-1} - z \frac{\exp(z/\gamma)}{\gamma (n-1)}}{\BktR{ 1 + \frac{\exp(z / \gamma)}{n-1} }^2} \]
+ The global maximum must occur at a critical point \(z^*\) with \(f_\gamma'(z^*) = 0\). 
+ This implies
+ \[ n-1 = ( z^* / \gamma - 1) \exp(z^* / \gamma) \]
+ Substituting \(z^* / \gamma - 1\) by \(w\) we get \(\frac{n-1}{e} = w \exp(w)\) 
+ and equations of this type are only solvable with the help of the Lambert W function.
+ For our purposes we will define the function \(W \colon \real_{\geq 0} \to \real_{\geq 0}\) 
+ as the inverse of \(x \mapsto x \exp(x)\) for \(x \in \real_{\geq 0}\).
+ This function is well defined because \(x \exp(x)\) is monotonically increasing on the positive real numbers.
+ It follows that \(w = W(\frac{n-1}{e})\) and \(z^* = \gamma ( W(\frac{n-1}{e}) + 1)\).
+ To compute the global maximum, let us evaluate \(f_\gamma\) at \(z^*\):
+ \[ f_\gamma(z^*) = \frac{\gamma ( W(\frac{n-1}{e}) + 1)}{1 + \frac{\exp( W(\frac{n-1}{e}) + 1 )}{n-1}} 
+                  = \gamma \frac{W(\frac{n-1}{e}) + 1}{1 + e \frac{n-1}{e W(\frac{n-1}{e})} \frac{1}{n-1}}
+                  = \gamma \frac{W(\frac{n-1}{e}) + 1}{1 + \frac{1}{ W(\frac{n-1}{e})}}
+                  = \gamma W(\tfrac{n-1}{e}). \]
+ Thus, we may conlude that
+ \[ \sup_{\mathbf{x} \in \real^n} \BktR{ \max(\mathbf{x}) - \WA_\gamma(\mathbf{x}) } = \sup_{z \in \real_{\geq 0}} f_\gamma(z) = \gamma W(\tfrac{n-1}{e}) \]
+ which proves the claim.
+\end{proof}
+
+
+\begin{theorem}[\cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns}, Theorem 2] \label{thm:WA_approximates_max_better_than_LSE}
+ The WA function approximates max better than the LSE function in the sense that the maximum absolute error is lower, i.e.
+ \[ \sup_{\mathbf{x} \in \real^n} \Abs{ \WA_\gamma(\mathbf{x}) - \max(\mathbf{x}) } < \sup_{\mathbf{x} \in \real^n} \Abs{ \LSE_\gamma(\mathbf{x}) - \max(\mathbf{x}) } \]
+ for all \(\gamma > 0\) and \(n \in \integers_{\geq 2}\).
+\end{theorem}
+
+\begin{proof}
+ Assume \(n \geq 2\). Then \(\log(n) \geq \log(2) > \frac{1}{e}\) and
+ \[ W(\tfrac{n-1}{e}) \exp(W(\tfrac{n-1}{e})) = \frac{n-1}{e} < \frac{1}{e} \cdot n < \log(n) n = \log(n) \exp(\log(n))\]
+ which implies \(W(\tfrac{n-1}{e}) < \log(n)\) because \(x \exp(x)\) is monotonically increasing on the positive real numbers.
+ With the results from \cref{thm:LSE_approximates_max} and \cref{thm:WA_approximates_max} this yields
+ \[ \sup_{\mathbf{x} \in \real^n} \Abs{ \WA_\gamma(\mathbf{x}) - \max(\mathbf{x}) } = \gamma W(\tfrac{n-1}{e}) < \gamma \log(n) = \sup_{\mathbf{x} \in \real^n} \Abs{ \LSE_\gamma(\mathbf{x}) - \max(\mathbf{x}) } \]
+ and we are done.
+\end{proof}
+
+
+\begin{remark}
+ Although \(\frac{W \BktR{\frac{n-1}{e}}}{\log(n)} \to 1\) for \(n \to \infty\), the ratio is much better for small \(n \geq 2\).
+ The expression is monotonically increasing and here are some values at selected points:
+ \[ \frac{W(\tfrac{2-1}{e})}{\log(2)} \approx 0.402 \quad \frac{W(\tfrac{20-1}{e})}{\log(20)} \approx 0.509 \quad \frac{W(\tfrac{200-1}{e})}{\log(200)} \approx 0.594\]
+\end{remark}
+
+
+
+\subsection{Derivatives} \label{sec:WA_derivatives}
+
+The gradient of the WA function is already stated in \cite[Eq. 14]{LangeZuehlkeHolzVillmann-SmoothMaximum}
+but they did not give the formula for the Hessian.
+
+\begin{theorem} \label{thm:WA_derivatives}
+ The WA function is twice continuously differentiable and the gradient and Hessian are
+ \begin{align*}
+  \nabla \WA_\gamma (\mathbf{x})   &= \sigma(\mathbf{x}/\gamma) \odot \BktR{ \mathbf{1} + \mathbf{x}/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} } \\
+  \nabla^2 \WA_\gamma (\mathbf{x}) &= \frac{1}{\gamma} \diag \BktR{ \sigma(\mathbf{x}/\gamma) \odot \BktR{ 2 \cdot \mathbf{1} + \mathbf{x}/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} } } \\
+                                   &- \frac{1}{\gamma} \sigma(\mathbf{x}/\gamma) \sigma(\mathbf{x}/\gamma)^T \odot \BktR{ 2 \cdot \mathbf{1} \mathbf{1}^T + \mathbf{1} \mathbf{x}^T / \gamma + \mathbf{x} \mathbf{1}^T / \gamma - \frac{2}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} \mathbf{1}^T }
+ \end{align*}
+ for all \(\mathbf{x} \in \real^n\) where \(\odot\) denotes the element-wise matrix multiplication.
+\end{theorem}
+
+\begin{proof}
+ We will only consider the case \(\gamma = 1\).
+ The general formulas follow directly from the identity \(\WA_\gamma(\mathbf{x}) = \gamma \WA_1(\mathbf{x}/\gamma)\) and the chain rule.
+ 
+ Let us begin by calculating the gradient \(\nabla \WA_1\). 
+ For all \(\mathbf{x} \in \real^n\) and \(1 \leq i \leq n\) we have
+ \begin{align*}
+  \frac{\partial \WA_1}{\partial x_i}(\mathbf{x}) &= \frac{\partial}{\partial x_i} \BktR{ \sum_{k=1}^n \sigma_k(\mathbf{x}) x_k } \\
+                                                  &= \sigma_i(\mathbf{x}) + \sigma_i(\mathbf{x}) x_i - \sum_{k=1}^n \sigma_i(\mathbf{x}) \sigma_k(\mathbf{x}) x_k \\
+                                                  &= \sigma_i(\mathbf{x}) \BktR{ 1 + x_i - \WA_1(\mathbf{x}) }
+ \end{align*}
+ as the first partial derivatives. 
+ The derivative of \(\sigma_k\) was already obtained in \cref{thm:LSE_derivatives}.
+ 
+ Now we will calculate all the second partial derivatives to get the Hessian \(\nabla^2 \WA_1\). 
+ Let \(1 \leq i, j \leq n\). The elements on the diagonal (\(i = j\)) are
+ \begin{align*}
+  \frac{\partial^2 \WA_1}{\partial x_i^2} (\mathbf{x}) &= \frac{\partial}{\partial x_i} \BktR{ \sigma_i(\mathbf{x}) \BktR{ 1 + x_i - \WA_1(\mathbf{x}) } } \\
+                                                       &= \BktR{ \sigma_i(\mathbf{x}) - \sigma_i(\mathbf{x}) \sigma_i(\mathbf{x}) } \BktR{ 1 + x_i - \WA_1(\mathbf{x}) } \\
+                                                       &\phantom{=} + \sigma_i(\mathbf{x}) \BktR{ 1 - \sigma_i(\mathbf{x}) \BktR{ 1 + x_i - \WA_1(\mathbf{x}) } } \\
+                                                       &= \sigma_i(\mathbf{x}) \BktR{ 2 + x_i - \WA_1(\mathbf{x}) } - \sigma_i(\mathbf{x}) \sigma_i(\mathbf{x}) \BktR{ 2 + 2x_i - 2\WA_1(\mathbf{x}) }
+ \end{align*}
+ and the off-diagonal entries (\(i \neq j\)) are
+ \begin{align*}
+  \frac{\partial^2 \WA_1}{\partial x_i \partial x_j} (\mathbf{x}) &= \frac{\partial}{\partial x_j} \BktR{ \sigma_i(\mathbf{x}) \BktR{ 1 + x_i - \WA_1(\mathbf{x}) } } \\
+                                                                       &= - \sigma_i(\mathbf{x}) \sigma_j(\mathbf{x}) \BktR{ 1 + x_i - \WA_1(\mathbf{x}) } + \sigma_i(\mathbf{x}) \BktR{ - \sigma_j(\mathbf{x}) \BktR{ 1 + x_j - \WA_1(\mathbf{x}) } } \\
+                                                                       &= - \sigma_i(\mathbf{x}) \sigma_j(\mathbf{x}) \BktR{ 2 + x_i + x_j - 2\WA_1(\mathbf{x}) }
+ \end{align*}
+ This shows that Hessian has the structure claimed above.
+\end{proof}
+
+
+
+\subsection{Convexity} \label{sec:WA_convexity}
+
+As already mentioned, Hsu et al. claimed in \cite{HsuChangBalabanov-AnalyticalPlacementFor3dIcDesigns} that the WA function is strictly convex
+but the following theorem shows that it is not.
+
+\begin{theorem} \label{thm:WA_is_not_convex}
+ The WA function is not convex for any \(n \in \integers_{\geq 2}\).
+\end{theorem}
+
+\begin{proof} 
+ Again, for a twice differentiable function \(f\) with a convex domain being convex is equivalent to the Hessian \(\nabla^2 f(\mathbf{x})\) being positive semidefinite everywhere
+ (see \cite[p. 71]{BoydVandenberghe-ConvexOptimization}).
+ To show that \(\nabla^2 \WA_\gamma(\mathbf{x})\) is not positive semidefinite for all \(\mathbf{x} \in \real^n\), we pick \(\mathbf{x} = ( \gamma a, 0, \ldots, 0)^T \in \real^n\).
+ We define \(\tilde{\sigma}: \real \to (0, 1)\) by
+ \[\tilde{\sigma}(a) \deq \sigma_1(\mathbf{x}/\gamma) = \frac{e^a}{e^a + (n-1)e^0} = \frac{e^a}{e^a + n-1}\]
+ and notice that
+ \[ \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) = \sum_{k=1}^n \sigma_k(\mathbf{x} / \gamma) (x_k / \gamma) = \sigma_1(\mathbf{x} / \gamma) (x_1 / \gamma) = \tilde{\sigma}(a) a .\]
+ Now we are ready to evaluate \(\mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(\mathbf{x}) } \mathbf{e}_1\) with the help of \cref{thm:WA_derivatives}:
+ \begin{align*}
+  \mathbf{e}_1^T \BktR{ \nabla^2 \WA_\gamma(\mathbf{x}) } \mathbf{e}_1 &= \frac{1}{\gamma} \tilde{\sigma}(a) \BktR{ 2 + a - \tilde{\sigma}(a) a } - \frac{1}{\gamma} \tilde{\sigma}(a)^2 \BktR{ 2 + 2 a - 2 \tilde{\sigma}(a) a } \\
+                                                                   &= \frac{1}{\gamma} \tilde{\sigma}(a) \BktR{ (2a) \tilde{\sigma}(a)^2 - (3a + 2)\tilde{\sigma}(a) + (2 + a) }
+ \end{align*}
+ Because \(\frac{1}{\gamma} \tilde{\sigma}(a)\) is positive for all \(a \in \real\), it suffices to show that the last factor can be negative.
+ Consider the quadratic function \(b \mapsto (2a)b^2 - (3a + 2)b + (2 + a)\).
+ For all \(a \notin \{0, 2\}\) it has exactly two roots: \(b = 1\) and \(b = \frac{1}{a} + \frac{1}{2}\).
+ 
+ Assume that \(a > 2\), then
+ \[ \tilde{\sigma}(a) = \frac{e^a}{e^a + n-1} > \frac{1}{a} + \frac{1}{2} \iff 1 + \frac{n-1}{e^a} < \frac{2a}{2+a} \]
+ and analogously for \(a < -2\)
+ \[ \tilde{\sigma}(a) = \frac{e^a}{e^a + n-1} < \frac{1}{a} + \frac{1}{2} \iff 1 + \frac{n-1}{e^a} > \frac{2a}{2+a} \]
+ Because \(\lim_{a \to \infty} 1 + \frac{n-1}{e^a} = 1\), \(\lim_{a \to -\infty} 1 + \frac{n-1}{e^a} = \infty\) and \(\lim_{a \pm \infty} \frac{2a}{2+a} = 2\),
+ there is an \(M > 2\) such that the first inequality is true for all \(a > M\) and the second inequality is true for all \(a < -M\).
+ 
+ Back to the quadratic function \(b \mapsto (2a)b^2 - (3a + 2)b + (2 + a)\). 
+ For \(a > M > 0\) the function is negative within the interval \([\frac{1}{a} + \frac{1}{2}, 1]\)
+ and for \(a < -M < 0\) it is negative outside of the interval \([\frac{1}{a} + \frac{1}{2}, 1]\).
+ Our considerations from above and the fact that \(\tilde{\sigma}(a) < 1\) imply
+ that in the first case \(\tilde{\sigma}(a)\) is inside the interval
+ and in the second case \(\tilde{\sigma}(a)\) is outside of the interval.
+ Therefore for \(\abs{a} > M\) we have
+ \[ (2a) \tilde{\sigma}(a)^2 - (3a + 2)\tilde{\sigma}(a) + (2 + a) < 0 \]
+ and the Hessian \(\nabla^2 \WA_\gamma(\mathbf{x})\) is not positive semidefinite.
+\end{proof}
+
+
+\begin{remark}
+ Although the WA function is not convex, it violates the convexity conditions only slightly.
+ However, by \cref{thm:WA_approximates_max} the following inequality holds:
+ \[ \max(\mathbf{x}) - \gamma W(\tfrac{n-1}{e}) \leq \WA_\gamma(\mathbf{x}) \leq \max(\mathbf{x}) \]
+ Because the maximum function is convex, this shows that \(\WA_\gamma\) is bounded by two convex functions that are only \(\gamma W(\tfrac{n-1}{e})\) apart.
+ 
+ Alternatively, \cref{fig:one_dimensional_netlength_comparison} already shows that the NWA function (and therefore the WA function) is not convex:
+ The graph converges towards HPWL for \(x \to \infty\) forcing it to curve slightly to the right thus breaking the convexity condition.
+\end{remark}
+
+
+
+\subsection{Lipschitz Continuous Gradient} \label{sec:WA_Lipschitz_continuous_gradient}
+
+Although the WA function is used in conjunction with convex optimization methods (for example in \cite{LuChenChangShaHuangTengCheng-ePlace}),
+there does not seem to be a rigorous proof prior to the following that the gradient of the function is Lipschitz continuous.
+We will use the same notation and results that were introduced in \cref{sec:LSE_Lipschitz_continuous_gradient}.
+Before we get to the main result of this section, we need a small lemma:
+
+\begin{lemma} \label{thm:WA_component_upper_bound}
+ For all \(1 \leq i \leq n\) we have
+ \[ \Abs{ \sigma_i(\mathbf{x}/\gamma) \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } } \leq W(\tfrac{n-1}{e})/\gamma .\]
+\end{lemma}
+
+\begin{proof}
+   Note that 
+  \[ \sum_{i = 1}^n \sigma_i(\mathbf{x}/\gamma) \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } = \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) = 0 \]
+  and by \cref{thm:WA_approximates_max}
+  \[ \sigma_i(\mathbf{x}/\gamma) \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } \leq \sigma_i(\mathbf{x}/\gamma) W(\tfrac{n-1}{e}) / \gamma \leq W(\tfrac{n-1}{e})/\gamma \]
+  for every \(1 \leq i \leq n\).
+  These observations let us conclude that 
+  \[ \sigma_i(\mathbf{x}/\gamma) \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } \geq - \sum_{k=1}^n \sigma_k(\mathbf{x}/\gamma) W(\tfrac{n-1}{e}) / \gamma = -W(\tfrac{n-1}{e}) / \gamma \]
+  Combining the last two inequalities proves the claim.
+\end{proof}
+
+
+\begin{theorem} \label{thm:WA_Lipschitz_constant_upper_bound}
+ \(\nabla \WA_\gamma\) is Lipschitz continuous (with respect to the Euclidean norm).
+\end{theorem}
+
+\begin{proof}
+ If we write the expression for the Hessian of \(\WA_\gamma\) from \cref{thm:WA_derivatives} in a different way, we have
+ \begin{align*}  
+   \nabla^2 \WA_\gamma (\mathbf{x}) &= \frac{2}{\gamma} \BktR{ \diag(\sigma(\mathbf{x}/\gamma)) - \sigma(\mathbf{x}/\gamma)\sigma(\mathbf{x}/\gamma)^T } \\
+                                    &\phantom{=} + \frac{1}{\gamma} \diag \BktR{ \sigma(\mathbf{x}/\gamma) \odot \BktR{ \mathbf{x}/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} } } \\
+                                    &\phantom{=} - \frac{1}{\gamma} \sigma(\mathbf{x}/\gamma) \sigma(\mathbf{x}/\gamma)^T \odot \BktR{ \mathbf{1} \mathbf{x}^T / \gamma + \mathbf{x} \mathbf{1}^T / \gamma - \frac{2}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} \mathbf{1}^T } 
+ \end{align*}
+ We will find an upper bound for the Frobenius norm of each of these terms.
+ 
+ Let us start with the first one. 
+ By \cref{thm:LSE_derivatives} we know that it is twice the Hessian of \(\LSE_\gamma\) 
+ and by \cref{thm:LSE_Lipschitz_constant_upper_bound} we know a bound for the Frobenius norm of \(\nabla^2 \LSE_\gamma(\mathbf{x})\).
+ Combining both gives us
+ \[ \Norm{ \frac{2}{\gamma} \BktR{ \diag(\sigma(\mathbf{x}/\gamma)) - \sigma(\mathbf{x}/\gamma)\sigma(\mathbf{x}/\gamma)^T } }_F = 2 \norm{ \nabla^2 \LSE_\gamma(\mathbf{x}) }_F \leq \frac{1}{\gamma} \]
+ 
+ For the second and third term we use the previous lemma to see that
+ \begin{align*}
+  &\phantom{{}={}} \Norm{ \frac{1}{\gamma} \diag \BktR{ \sigma(\mathbf{x}/\gamma) \odot \BktR{ \mathbf{x}/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} } } }_F \\
+  &= \frac{1}{\gamma} \sqrt{ \sum_{i=1}^n \BktR{ \sigma_i(\mathbf{x}/\gamma) \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } }^2 } \\
+  &\leq \frac{1}{\gamma} \sqrt{ n W(\tfrac{n-1}{e})^2 / \gamma^2 } = \frac{1}{\gamma^2} \sqrt{n} \cdot W(\tfrac{n-1}{e})
+ \end{align*}
+ and
+ \begin{align*}
+  &\phantom{{}={}} \Norm{ \frac{1}{\gamma} \sigma(\mathbf{x}/\gamma) \sigma(\mathbf{x}/\gamma)^T \odot \BktR{ \mathbf{1} \mathbf{x}^T / \gamma + \mathbf{x} \mathbf{1}^T / \gamma - \frac{2}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} \mathbf{1}^T } }_F \\
+  &= \frac{1}{\gamma} \sqrt{ \sum_{i=1}^n \sum_{j=1}^n \BktR{ \sigma_i(\mathbf{x}/\gamma) \sigma_j(\mathbf{x}/\gamma) \BktR{ x_i/\gamma + x_j/\gamma - \frac{2}{\gamma} \WA_\gamma(\mathbf{x}) } }^2 } \\
+  &= \frac{1}{\gamma} \sqrt{ \sum_{i=1}^n \sum_{j=1}^n \sigma_i(\mathbf{x}/\gamma)^2 \sigma_j(\mathbf{x}/\gamma)^2 \BktR{ \Abs{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x})} + \Abs{ x_j/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) } }^2 } \\
+  &\leq \frac{1}{\gamma} \sqrt{ \sum_{i=1}^n \sum_{j=1}^n \sigma_i(\mathbf{x}/\gamma)^2 \sigma_j(\mathbf{x}/\gamma)^2 \BktR{ \BktR{ x_i/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x})}^2 + \BktR{ x_j/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) }^2 } } \\
+  &= \frac{1}{\gamma} \sqrt{ 2 \BktR{ \sum_{i=1}^n \sigma_i(\mathbf{x}/\gamma)^2 } \BktR{ \sum_{j=1}^n \sigma_j(\mathbf{x}/\gamma)^2 \BktR{ x_j/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x})}^2 } } \\
+  &\leq \frac{1}{\gamma} \sqrt{ 2 \cdot 1 \cdot n W(\tfrac{n-1}{e})^2 / \gamma^2 } = \frac{\sqrt{2}}{\gamma^2} \sqrt{n} \cdot W(\tfrac{n-1}{e})
+ \end{align*}
+ 
+ Adding up all the upper bounds of the Frobenius norms gives us
+ \[ \sup_{\mathbf{x} \in \real^n} \Norm{\nabla^2 \WA_\gamma (\mathbf{x})}_2 \leq \sup_{\mathbf{x} \in \real^n} \Norm{\nabla^2 \WA_\gamma (\mathbf{x})}_F \leq \frac{1}{\gamma} + \frac{1+\sqrt{2}}{\gamma^2} \sqrt{n} \cdot W(\tfrac{n-1}{e}) \]
+ and this is an upper bound on the best global Lipschitz constant.
+\end{proof}

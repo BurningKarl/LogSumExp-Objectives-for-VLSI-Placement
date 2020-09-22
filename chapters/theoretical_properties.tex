@@ -1,0 +1,37 @@
+\chapter{Theoretical Properties of LogSumExp and Weighted-Average} \label{chap:theoretical_properties}
+
+To justify the use of NLSE and NWA as a netlength estimations 
+and also the use of convex optimization techniques when minimizing the corresponding objective functions,
+this chapter will explore the properties of both functions.
+First, the results for the functions LSE and WA are presented 
+and then those results are used to show properties of the single net objective functions \(\overline{\NLSE}^N\) and \(\overline{\NWA}^N\).
+It suffices to consider the one-dimensional functions because x- and y-coordinates are optimized independently.
+The most relevant facts are
+\begin{itemize}
+ \item LSE and WA approximate the maximum function
+ \item LSE and WA are (at least) twice differentiable
+ \item LSE is convex, WA is bounded by two convex functions
+ \item LSE and WA have a Lipschitz continuous gradient
+ \item NLSE and NWA approximate the HPWL function
+ \item \(\overline{\NLSE}^N\) and \(\overline{\NWA}^N\) are (at least) twice differentiable
+ \item \(\overline{\NLSE}^N\) is convex, \(\overline{\NWA}^N\) is bounded by two convex functions
+ \item \(\overline{\NLSE}^N\) and \(\overline{\NWA}^N\) have a Lipschitz continuous gradient
+\end{itemize}
+All of the results stated above are already known except for the Lipschitz continuity of the gradient of WA.
+The results about \(\NLSE\) and \(\NWA\), although they seem to not have been explicitly stated, are easy corollaries.
+
+Prior to this, let us introduce some notation.
+Throughout this thesis bold lowercase letters are used to denote vectors.
+For example \(\mathbf{x} \in \real^n\) is a vector and its entries are \(x_1, x_2, \ldots, x_n\).
+\(\mathbf{0}\) is the \(n\)-dimensional zero vector,
+\(\mathbf{1}\) is the \(n\)-dimensional vector with entry 1 at each position
+and \(\mathbf{e}_i\) is the \(i\)th canonical basis vector of \(\real^n\).
+Regarding matrices, \(\diag(\mathbf{y})\) denotes the matrix whose entries on the diagonal are \(y_1, \ldots, y_n\)
+and whose other entries are zero
+and \(\odot\) denotes elementwise matrix multiplication or elementwise vector multiplication.
+Lastly, \(\norm{.}_p\) for \(1 \leq p \leq \infty\) refers to the \(p\)-norm for vectors and its induced norm for matrices.
+
+\subimport{theoretical_properties/}{lse.tex}
+\subimport{theoretical_properties/}{wa.tex}
+\subimport{theoretical_properties/}{nlse.tex}
+\subimport{theoretical_properties/}{nwa.tex}

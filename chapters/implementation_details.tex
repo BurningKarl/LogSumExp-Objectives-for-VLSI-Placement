@@ -1,0 +1,299 @@
+\chapter{Implementation Details} \label{chap:implementation_details}
+
+Before we come to the results of minimizing \(\NLSE\) and \(\NWA\) on real chips,
+we need to explain the details of our implementation of the theory that was discussed before.
+
+
+\section{Evaluating LSE, WA and Their Derivatives} \label{sec:evaluating_LSE_and_WA}
+
+In this section, the details about how the calculation of the objective function and the gradient was implemented for LSE and WA are discussed.
+We mostly followed the mathematical description but added a value shift that leaves the result unchanged but avoids overflow errors.
+
+
+
+\subsection{Shifting LSE, WA and Their Derivatives} \label{sec:shifting_LSE_and_WA}
+
+To start off, it is important to see how shifting all elements in a vector \(\mathbf{x}\) by the same amount \(c\) affects
+the output of the two maximum approximations LSE and WA and their derivatives.
+It turns out that a simultaneous shift in the input is equivalent to a shift in the output for LSE and WA and
+that such a shift does not alter the value of the derivatives at all.
+
+\begin{lemma} \label{thm:shifting_LSE}
+ Let \(\mathbf{x} \in \real^n\) and \(c \in \real\) then
+ \[ \LSE_\gamma(\mathbf{x} + c \cdot \mathbf{1}) = \LSE_\gamma(\mathbf{x}) + c . \]
+\end{lemma}
+
+\begin{proof}
+ By the defintion of LSE we have that
+ \begin{align*}
+     \LSE_\gamma(\mathbf{x} + c \cdot \mathbf{1})
+  &= \gamma \log \BktR{\sum_{k = 1}^n \exp((x_k + c)/\gamma)}
+   = \gamma \log \BktR{\sum_{k = 1}^n \exp(x_k/\gamma)\exp(c/\gamma)} \\
+  &= \gamma \log \BktR{\sum_{k = 1}^n \exp(x_k/\gamma)} + \gamma \log(\exp(c/\gamma)) \\
+  &= \LSE_\gamma(\mathbf{x}) + c
+ \end{align*}
+ which proves the claim.
+\end{proof}
+
+\begin{corollary} \label{thm:shifting_softmax}
+ Let \(\mathbf{x} \in \real^n\) and \(c \in \real\), then
+ \[ \sigma((\mathbf{x} + c \cdot \mathbf{1})/\gamma) = \nabla \LSE_\gamma(\mathbf{x} + c \cdot \mathbf{1}) = \nabla \LSE_\gamma(\mathbf{x}) = \sigma(\mathbf{x}/\gamma) . \] 
+\end{corollary}
+
+\begin{proof}
+ The first and the last equation follow from \cref{thm:LSE_derivatives} and the remaining equation follows from the lemma above by taking derivatives on both sides.
+\end{proof}
+
+
+\begin{lemma} \label{thm:shifting_WA}
+ Let \(\mathbf{x} \in \real^n\) and \(c \in \real\) then
+ \[ \WA_\gamma(\mathbf{x} + c \cdot \mathbf{1}) = \WA_\gamma(\mathbf{x}) + c .\]
+\end{lemma}
+
+\begin{proof}
+ Plugging \(\mathbf{x} + c \cdot \mathbf{1}\) into the definition of WA gives us
+ \begin{align*}
+     \WA_\gamma(\mathbf{x} + c \cdot \mathbf{1})
+  &= \sigma((\mathbf{x} + c \cdot \mathbf{1})/\gamma)^T (\mathbf{x} + c \cdot \mathbf{1}) \\
+  &= \sigma(\mathbf{x}/\gamma)^T \mathbf{x} + c \cdot \sigma(\mathbf{x}/\gamma)^T \mathbf{1} \\
+  &= \sigma(\mathbf{x}/\gamma)^T \mathbf{x} + c
+ \end{align*}
+ where we used \cref{thm:shifting_softmax} and the fact that the softmax function maps every value to a stochastic vector.
+\end{proof}
+
+
+\begin{corollary} \label{thm:shifting_gradient_of_WA}
+ Let \(\mathbf{x} \in \real^n\) and \(c \in \real\) then
+ \[ \nabla \WA_\gamma(\mathbf{x} + c \cdot \mathbf{1}) = \nabla \WA_\gamma(\mathbf{x}) .\]
+\end{corollary}
+
+\begin{proof}
+ The equation follows from \cref{thm:shifting_WA} by taking derivatives on both sides.
+\end{proof}
+
+
+
+\subsection{Solving Overflow Errors} \label{sec:solving_overflow_errors}
+
+An overflow error occurs if the result of a computation exceeds the maximal value that can be stored in the chosen numerical datatype.
+We use the datatype \texttt{double} which uses fast floating-point arithmetic and provides the necessary precision for our purposes.
+By the IEEE 754 Standard for Floating-Point Arithmetic, the maximal value a number of type \texttt{double} can store is roughly \(2^{1024} \approx e^{710}\)
+while the smallest positive number is \(2^{-1074} \approx e^{-745}\).
+When evaluating \(\LSE_\gamma\), \(\nabla \LSE_\gamma\), \(\WA_\gamma\) or \(\nabla \WA_\gamma\),
+the exponential function has to be calculated for inputs of the form \(x_i/\gamma\)
+and this can fail once \(x_i /\gamma\) is greater than \(710\).
+In this case, the result of \(\exp(x_i/\gamma)\) is the special \texttt{double} value that represents infinity and none of the subsequent calculations work correctly anymore.
+
+One way to tackle the problem would be to increase \(\gamma\) (or equivalently downscale the problem instance)
+such that \(x_{\max}/\gamma\) is small enough, but this comes at the cost of worsening the approximation properties of NLSE and NWA.
+A second approach would be to modify the problem instance by shifting all positions and the chip area simultaneously such that all position values are sufficiently small.
+The problem with this approach is that now there might be underflow errors:
+Imagine a net where all pin positions are so far to the left that after dividing by \(\gamma\) they are all smaller than \(-745\).
+Evaluating the LSE function with \texttt{double} precision will round all \(\exp(x_i / \gamma)\) down to zero and then returns \(\log(0)\) which is \(-\infty\).
+This result is completely unusable and again breaks all subsequent computations.
+
+The best strategy is to shift all pin positions in a net for each evaluation of one of the functions from the theorems above and 
+then modify the result accordingly.
+This approach is already in use for the LogSumExp function and is known as the \enquote{LogSumExp trick} in the Machine Learning community
+(see for example \cite[p. 6]{DurkanPapamakariosMurray-SequentialNeuralMethods} and \cite[p. 3]{Cook-BasicPropertiesOfTheSoftMaximum}).
+It is standard to shift using \(c = -\max(\mathbf{x})\) so that afterwards the maximal \(x_i\) is zero.
+This avoids overflow errors (because \(\exp((x_i - c)/\gamma) \leq \exp(0) = 1\))
+and only produces underflow errors that influence the results very little.
+Consider for example an evaluation of the LSE function for a net with \(n\) pins:
+The absolute error that occurs when all evaluations of the exponential function except for \(\exp(0)\) are rounded down to zero due to underflow errors is at most
+\[ \log(1 + (n-1) \exp(-745)) - \log(1) \leq (n-1) \exp(-745). \]
+Even if the net contained 10,000 pins (which unreasonably large for any practical instance),
+the error would still be insignificant.
+Similar observations can be made for the other functions: 
+Once a pin position is so far away from the maximum to produce an underflow error, it hardly influences the result.
+Of course, this shift requires to calculate the maximum of \(n\) values for each use of one of the functions 
+but because this can be done in \(O(n)\) it only increases the runtime by a constant factor.
+In summary, using this shifting technique for each evaluation of
+\(\LSE_\gamma\), \(\nabla \LSE_\gamma\), \(\WA_\gamma\) and \(\nabla \WA_\gamma\)
+is an effective way to avoid significant numerical errors.
+
+
+\subsection{Theoretical Runtimes} \label{sec:theortical_runtimes}
+
+It might seem like the definitions of \(\overline{\NLSE}_\gamma^N\) and \(\overline{\NWA}_\gamma^N\)
+as well as \cref{thm:NLSE_derivatives} and \cref{thm:NWA_derivatives}
+show that a matrix vector multiplication is needed to evaluate these functions and their derivatives
+but this is not the case.
+The introduction of the matrices \(A(N)\) was done to abbreviate some statements and definitions
+and was also useful when proving convexity and Lipschitz continuity.
+To see what the runtime of the objective functions looks like, we need to first confirm
+that all of the component functions have linear runtime.
+This can be checked directly by looking at their definitions:
+\begin{align*}
+ \LSE_\gamma(\mathbf{x})         &= \gamma \log \BktR{\sum_{k = 1}^n \exp(x_k/\gamma)} \\
+ \nabla \LSE_\gamma (\mathbf{x}) &= \sigma(\mathbf{x}/\gamma) = \frac{1}{\sum_{k = 1}^n \exp(x_k)} \BktR{ \exp(x_1), \ldots, \exp(x_n) }^T \\
+ \WA_\gamma(\mathbf{x})          &= \sigma(\mathbf{x} / \gamma)^T \mathbf{x} \\
+ \nabla \WA_\gamma (\mathbf{x})  &= \sigma(\mathbf{x}/\gamma) \odot \BktR{ \mathbf{1} + \mathbf{x}/\gamma - \frac{1}{\gamma} \WA_\gamma(\mathbf{x}) \cdot \mathbf{1} }.
+\end{align*}
+Calculating the pin positions from the cell positions
+which was often abbreviated by \(\mathbf{x}^P(N) = A(N) \mathbf{x} + \mathbf{x}_{\offs}^P(N)\) in the previous section
+is straightforward:
+Loop through all pins \(p \in N\) and determine each pin position as the position of the cell \(\alpha(p)\) plus the pin offset.
+This can be done in \(O(\abs{N})\) without any matrix vector multiplication.
+Combining these results shows that evaluating one of the functions above with the pin positions
+as parameter can be done in \(O(\abs{N})\).
+
+Remember that \(T_{\NLSE_\gamma}\) and \(T_{\NWA_\gamma}\) are the weighted sums of the netlength estimations
+and serve as objective functions in our case.
+Because we split up the work in one problem for the x-dimension and one for the y-dimension,
+it suffices to look at their one-dimensional counterparts which we will denote by
+\(T_{\overline{\NLSE}_\gamma}\) and \(T_{\overline{\NWA}_\gamma}\) for the x-dimension (y-coordinates work analogously).
+What is the theoretical runtime of evaluating one of these objective functions or their gradients?
+Lets look at the formulas again:
+\begin{align*}
+ T_{\overline{\NLSE}_{\gamma}}(\mathbf{x})          &= \sum_{N \in \mathcal{N}} w(N) \sum_{s \in \{-1, 1\}} \LSE_{\gamma}(s \cdot \mathbf{x}^P(N)) \\
+ \nabla T_{\overline{\NLSE}_{\gamma}}(\mathbf{x})_c &= \sum_{N \in \mathcal{N}} w(N) \sum_{s \in \{-1, 1\}} \sum_{\substack{p \in N \\ \alpha(p) = c}} s \cdot \nabla \LSE_\gamma(s \cdot \mathbf{x}^P(N))_p \\
+ T_{\overline{\NWA}_{\gamma}}(\mathbf{x})           &= \sum_{N \in \mathcal{N}} w(N) \sum_{s \in \{-1, 1\}} \WA_{\gamma}(s \cdot \mathbf{x}^P(N)) \\
+ \nabla T_{\overline{\NWA}_{\gamma}}(\mathbf{x})_c  &= \sum_{N \in \mathcal{N}} w(N) \sum_{s \in \{-1, 1\}} \sum_{\substack{p \in N \\ \alpha(p) = c}} s \cdot \nabla \WA_\gamma(s \cdot \mathbf{x}^P(N))_p
+\end{align*}
+The \(s\) variable was added to abbreviate the two summands that are part of \(\NLSE_\gamma\) and \(\NWA_\gamma\).
+The formulas for the gradients are given as formulas that calculate the gradient for a single cell \(c\).
+In the implementation one loops over the outer two sums,
+calculates the pin positions and the gradient of \(\LSE_\gamma\) or \(\WA_\gamma\),
+then loops over all pins in the net and adds the entry of pin \(p\) to the entry of cell \(\alpha(p)\)
+if the pin is not fixed.
+This gives a runtime of \(O(\sum_{N \in \mathcal{N}} \abs{N})\) = \(O(\abs{P})\) for all of the objective functions and their gradients.
+
+
+\section{Placing Cells Inside the Chip Area} \label{sec:placing_cells_inside_chip_area}
+
+As mentioned in \cref{sec:mathematical_description}, it basically suffices to solve an unconstrained optimization problem
+by dropping the requirement that the cells (or at least their anchor points) stay inside the chip area
+because any reasonable placement will not place cells outside of the chip area anyways.
+This knowlegde about how reasonable placements should look like
+leads to the following improvement of the convex optimization methods.
+In each iteration, the anchor points (i.e. the midpoints) of all movable cells are projected to
+the nearest position inside the chip area.
+In other words
+\[ 
+   x_c^{(k)} = \begin{cases}
+                x_{\max} & \text{if } x_c^{(k)} > x_{\max} \\
+                x_{\min} & \text{if } x_c^{(k)} < x_{\min} \\
+                x_c^{(k)} & \text{otherwise}
+               \end{cases}
+   \quad \text{and} \quad
+   y_c^{(k)} = \begin{cases}
+                y_{\max} & \text{if } y_c^{(k)} > y_{\max} \\
+                y_{\min} & \text{if } y_c^{(k)} < y_{\min} \\
+                y_c^{(k)} & \text{otherwise}
+               \end{cases}
+\]
+for every movable cell \(c \in C\) and after every iteration \(k\).
+This operation is not expensive as it can be combined with the gradient step
+which also requires to update every cell position.
+At the same time, it can improve intermediate placements
+where a few cells are placed outside of the chip \enquote{by accident}.
+If these cells were not projected inside the chip area,
+they would additionally draw other cells towards them
+so this technique also helps to find good placements faster.
+Its influence will not be very significant
+but because it is expected to increase the solution quality
+with no relevant disadvantages, it is used for all of the results presented in the next chapter.
+
+
+
+\section{The Parameters of the Optimization Process} \label{sec:parameters}
+
+This section serves as a summary of all the parameters that can be chosen independently from each other
+when optimizing the total wirelength using either NLSE or NWA as the netlength estimation.
+\begin{enumerate}
+ \item The netlength estimation: NLSE or NWA
+ \begin{enumerate}
+  \item The value of \(\gamma\)
+ \end{enumerate}
+ \item The optimization method: GD or NAG
+ \begin{enumerate}
+  \item The start vector \(\mathbf{x}^{(0)}\)
+  \item The first step size \(h_0\)
+  \item The step size strategy
+  \item The precision \(\varepsilon\) used for the stopping criterion
+ \end{enumerate}
+\end{enumerate}
+
+
+\subsection{The Gamma Value} \label{subsec:implementation_gamma}
+
+We will try different values for the smoothing parameter \(\gamma\) for both objective functions.
+The objective functions for x- and y-coordinates will always have the same \(\gamma\) value.
+To cover a wide range of values, we chose 
+\[ \gamma \in \{ 10^1, 10^3, 10^5 \} \]
+where \(\gamma = 10\) is extremely small and \(\gamma = 10^5\) relatively large.
+The x- and y-values in the experiments in the following section are roughly between zero and \(10^6\).
+
+
+\subsection{The Start Vector} \label{subsec:implementation_start_vector}
+
+The two start vectors (for x- and y-direction) for the gradient descent method or Nesterov's accelerated gradient method
+correspond to an initial placement of all movable cells.
+It is hard to find an initial placement that is close to the optimal placement
+when the optimal placement completely unknow.
+The easiest option is to just select a random placement from the set of all possible placements.
+We chose to use a uniform distribution over the chip area for each cell
+which is the same as a uniform distribution of x-values over the width of the chip
+and a uniform distribution of y-values over the height of the chip.
+To be able to compare how the optimization of different objective functions looks like with this start vector,
+the two different seed values for the pseudo-random number generators
+for x- and y-coordinates were fixed for each chip.
+
+The second option is to let all cells start at the same place.
+This is also a simple rule that does not require special knowlegde about the cells.
+With the (resonable) assumption that the average position of all cells in an 
+optimal placement will be roughly at the center of the chip,
+the best start vector following this rule is the one that places all cells at the center of the chip:
+\[ \mathbf{x}^{(0)} = \frac{x_{\min} + x_{\max}}{2} \cdot \mathbf{1} \quad \text{and} \quad \mathbf{y}^{(0)} = \frac{y_{\min} + y_{\max}}{2} \cdot \mathbf{1} . \]
+
+Another two options are to use the optimal placements with respect to \(\HPWL\) and \(\QCLIQUE\) as starting positions.
+Of course, this can increase the runtime considerably but it is of theoretical interest to see
+how these starting positions are changed by \(\NLSE\) or \(\NWA\).
+Additionally, because they were found by using information about the cells, pins and nets,
+they are expected to be good starting points for netlength minimization.
+
+The start values that we will consider are therefore
+\begin{itemize}
+ \item RANDOM: Uniformly pseudo-random cell positions with fixed seeds
+ \item CENTER: The placement in which all movable cells are at the center of the chip
+ \item HPWL-OPT: The optimal placement when minimizing \(T_{\HPWL}\)
+ \item QCLIQUE-OPT: The optimal placement when minimizing \(T_{\QCLIQUE}\)
+\end{itemize}
+
+
+\subsection{The First Step Size} \label{subsec:implementation_first_step_size}
+
+For both convex optimization methods, i.e. gradient descent and Nesterov's accelerated gradient,
+the very first step from \(\mathbf{x}^{(0)}\) to \(\mathbf{x}^{(1)}\) is just a gradient step
+but, as pointed out in \cref{subsec:step_size_strategy}, the first step size has to be specified.
+To avoid hardcoding the first step size and being much too low or much too high, we chose to start at
+\[ h_0 = 10000 \cdot \frac{(x_{\max} - x_{\min})}{\abs{\mathcal{N}}} \]
+which should be too high in most cases and then use \texttt{backtracking-line-search} to decrease it to a reasonable size.
+
+
+\subsection{The Step Size Strategy} \label{subsec:implementation_step_size_strategy}
+
+The details can be found in \cref{subsec:step_size_strategy}, this is the list of step size strategies:
+\begin{itemize}
+ \item \texttt{constant}: \(h_k = h_0\)
+ \item \texttt{scaled-by-sqrt}: \(h_k = \frac{h_0}{\sqrt{k+1}}\)
+ \item \texttt{backtracking-line-search}: \(h_k = 2^{-n} h_{k-1}\) with minimal \(n\) such that 
+        \[f(\mathbf{x}^{(k)} - h_k \nabla f(\mathbf{x}^{(k)})) \leq f(\mathbf{x}^{(k)}) - \frac{1}{2} h_k \Norm{\nabla f(\mathbf{x}^{(k)})}_2^2 \]
+ \item \texttt{observed-lipschitz}: \(h_k = \frac{\norm{ \mathbf{x}^{(k)} - \mathbf{x}^{(k-1)} }_2}{\norm{ \nabla f(\mathbf{x}^{(k)}) - \nabla f(\mathbf{x}^{(k-1)}) }_2}\)
+ \item \texttt{min-observed-lipschitz}: \(h_k = \min\BktC{h_{k-1}, \frac{\norm{ \mathbf{x}^{(k)} - \mathbf{x}^{(k-1)} }_2}{\norm{ \nabla f(\mathbf{x}^{(k)}) - \nabla f(\mathbf{x}^{(k-1)}) }_2}}\)
+ \item \texttt{barzilai-borwein}: \(h_k = \frac{\abs{ \BktR{ \mathbf{x}^{(k)} - \mathbf{x}^{(k-1)} }^T \BktR{ \nabla f(\mathbf{x}^{(k)}) - \nabla f(\mathbf{x}^{(k-1)}) } }}{\norm{ \nabla f(\mathbf{x}^{(k-1)}) - \nabla f(\mathbf{x}^{(k)}) }_2^2}\)
+\end{itemize}
+
+
+\subsection{The Precision of the Stopping Criterion} \label{subsec:implementation_precision}
+
+For the criterion \(\norm{\nabla f(\mathbf{x}^{(k)})}_2 < \varepsilon\) introduced in \cref{subsec:stopping_criterion} to work correctly
+it is important that \(\norm{\nabla f(\mathbf{x}^{(k)})}_2\) converges to zero,
+so that any choice of \(\varepsilon\) is a tradeoff between precision and runtime.
+It is unclear whether the gradient norm will really converge to zero nicely and
+for most of the comparisons in \cref{chap:results} runtime is secondary,
+so it is easier to fix the number of iterations and graph the objective functions iteration by iteration.
+One can then see how many iterations are reasonable to reach a point where the objective function does not decrease significantly anymore.
+The difficulty of finding reasonable values for \(\varepsilon\)
+that do not need to be fine-tuned for every instance is discussed in \cref{sec:choosing_stopping_criterion_precision}.
